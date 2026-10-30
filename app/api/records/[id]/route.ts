@@ -8,6 +8,7 @@ import workbookSnapshot from "@/lib/workbook-snapshot.json";
 
 const updateInput = z.object({
   category: z.enum(["Submission", "Inspection", "Test", "NCR & Observation"]),
+  subcategory: z.string().trim().min(1).max(120),
   refNo: z.string().trim().min(1).max(160),
   accRef: z.string().trim().max(160).optional().default(""),
   title: z.string().trim().min(1).max(600),
@@ -55,6 +56,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const record = {
       id,
       category: input.category,
+      subcategory: input.subcategory,
       sourceSheet: existing[0]?.sourceSheet ?? snapshot?.sourceSheet ?? "Dashboard entry",
       sourceRow: existing[0]?.sourceRow ?? snapshot?.sourceRow ?? null,
       refNo: input.refNo,

@@ -9,6 +9,7 @@ import workbookSnapshot from "@/lib/workbook-snapshot.json";
 const recordInput = z.object({
   id: z.string().min(1).max(96).optional(),
   category: z.enum(["Submission", "Inspection", "Test", "NCR & Observation"]),
+  subcategory: z.string().trim().min(1).max(120),
   refNo: z.string().trim().min(1).max(160),
   accRef: z.string().trim().max(160).optional().default(""),
   title: z.string().trim().min(1).max(600),
@@ -55,9 +56,12 @@ export async function GET() {
   }
 
   const overrides = new Map(saved.map((row) => [String(row.id), row]));
-  const snapshotRows = workbookSnapshot.records.map((record) => ({ ...record, ...(overrides.get(record.id) ?? {}) }));
+  const snapshotRows = workbookSnapshot.records.map((record) => {
+    const savedRecord = overrides.get(record.id) ?? {};
+    return { ...record, ...savedRecord, subcategory: String(savedRecord.subcategory ?? record.sourceSheet).trim() };
+  });
   const snapshotIds = new Set(workbookSnapshot.records.map((record) => record.id));
-  const newRows = saved.filter((row) => !snapshotIds.has(String(row.id)));
+  const newRows = saved.filter((row) => !snapshotIds.has(String(row.id))).map((row) => ({ ...row, subcategory: String(row.subcategory ?? row.sourceSheet).trim() }));
   return Response.json(
     {
       project: workbookSnapshot.project,
@@ -89,6 +93,7 @@ export async function POST(request: Request) {
   const value = {
     id,
     category: input.category,
+    subcategory: input.subcategory,
     sourceSheet: input.sourceSheet,
     sourceRow: null,
     refNo: input.refNo,

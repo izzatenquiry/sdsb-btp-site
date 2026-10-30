@@ -5,6 +5,7 @@ export const qaqcRecords = sqliteTable(
   {
     id: text("id").primaryKey(),
     category: text("category").notNull(),
+    subcategory: text("subcategory").notNull().default("General"),
     sourceSheet: text("source_sheet").notNull().default("Dashboard entry"),
     sourceRow: integer("source_row"),
     refNo: text("ref_no").notNull(),

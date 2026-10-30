@@ -1,0 +1,1 @@
+ALTER TABLE `qaqc_records` ADD `subcategory` text DEFAULT 'General' NOT NULL;

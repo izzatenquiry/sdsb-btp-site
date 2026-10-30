@@ -12,6 +12,7 @@ type State = "open" | "closed" | "unknown";
 type RecordRow = {
   id: string;
   category: Category;
+  subcategory: string;
   sourceSheet: string;
   sourceRow?: number | null;
   refNo: string;
@@ -41,6 +42,7 @@ type User = { name: string; email: string };
 type FilterMode = "all" | "open" | "overdue" | "due-soon" | "closed";
 type FormValue = {
   category: Category;
+  subcategory: string;
   refNo: string;
   accRef: string;
   title: string;
@@ -90,7 +92,7 @@ function statusTone(status: string, state: State) {
   return "status-muted";
 }
 function blankForm(): FormValue {
-  return { category: "Submission", refNo: "", accRef: "", title: "", discipline: "", location: "", status: "Awaiting Response", recordDate: "", dueDate: "", notes: "" };
+  return { category: "Submission", subcategory: "", refNo: "", accRef: "", title: "", discipline: "", location: "", status: "Awaiting Response", recordDate: "", dueDate: "", notes: "" };
 }
 
 export function Dashboard({ user }: { user: User }) {
@@ -102,6 +104,7 @@ export function Dashboard({ user }: { user: User }) {
   const [section, setSection] = useState<"Overview" | "Register">("Overview");
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
   const [categoryFilter, setCategoryFilter] = useState<Category | "All">("All");
+  const [subcategoryFilter, setSubcategoryFilter] = useState("All");
   const [query, setQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<RecordRow | null>(null);
@@ -135,6 +138,12 @@ export function Dashboard({ user }: { user: User }) {
   }, [refresh]);
 
   const rows = useMemo(() => data?.records ?? [], [data]);
+  const subcategories = useMemo(() => (data?.sheets ?? [])
+    .filter((sheet) => sheet.category && (categoryFilter === "All" || sheet.category === categoryFilter))
+    .map((sheet) => sheet.name.trim())
+    .filter(Boolean)
+    .filter((name, index, names) => names.indexOf(name) === index)
+    .sort((a, b) => a.localeCompare(b)), [data?.sheets, categoryFilter]);
   const today = localDate();
   const stats = useMemo(() => {
     const open = rows.filter(isOpen).length;
@@ -153,15 +162,16 @@ export function Dashboard({ user }: { user: User }) {
       if (filterMode === "closed" && row.state !== "closed") return false;
       if (filterMode === "overdue" && !isOverdue(row, today)) return false;
       if (filterMode === "due-soon" && !isDueSoon(row, today)) return false;
+      if (subcategoryFilter !== "All" && row.subcategory !== subcategoryFilter) return false;
       if (!term) return true;
-      return [row.refNo, row.accRef, row.title, row.location, row.discipline, row.sourceSheet, row.status]
+      return [row.refNo, row.accRef, row.title, row.location, row.discipline, row.sourceSheet, row.subcategory, row.status]
         .some((value) => String(value ?? "").toLowerCase().includes(term));
     }).sort((a, b) => {
       const aDate = isOverdue(a, today) ? a.dueDate ?? "" : "9999-99-99";
       const bDate = isOverdue(b, today) ? b.dueDate ?? "" : "9999-99-99";
       return aDate.localeCompare(bDate) || a.refNo.localeCompare(b.refNo);
     });
-  }, [rows, categoryFilter, filterMode, query, today]);
+  }, [rows, categoryFilter, subcategoryFilter, filterMode, query, today]);
 
   const categoryStats = useMemo(() => categories.map((category) => {
     const subset = rows.filter((row) => row.category === category);
@@ -176,18 +186,19 @@ export function Dashboard({ user }: { user: User }) {
   }
   function startEdit(row: RecordRow) {
     setEditing(row);
-    setForm({ category: row.category, refNo: row.refNo, accRef: row.accRef ?? "", title: row.title, discipline: row.discipline ?? "", location: row.location ?? "", status: row.status === "Not recorded" ? statusOptions[row.category][0] : row.status, recordDate: row.recordDate ?? "", dueDate: row.dueDate ?? "", notes: row.notes ?? "" });
+    setForm({ category: row.category, subcategory: row.subcategory || row.sourceSheet, refNo: row.refNo, accRef: row.accRef ?? "", title: row.title, discipline: row.discipline ?? "", location: row.location ?? "", status: row.status === "Not recorded" ? statusOptions[row.category][0] : row.status, recordDate: row.recordDate ?? "", dueDate: row.dueDate ?? "", notes: row.notes ?? "" });
     setFormError("");
     setModalOpen(true);
   }
   function openFilter(mode: FilterMode) {
     setSection("Register");
     setFilterMode(mode);
+    setSubcategoryFilter("All");
   }
   function downloadCsv() {
-    const columns = ["Category", "Reference", "ACC Ref", "Title", "Trade", "Location", "Status", "Due date", "Source sheet"];
+    const columns = ["Category", "Subcategory", "Reference", "ACC Ref", "Title", "Trade", "Location", "Status", "Due date", "Source sheet"];
     const quote = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
-    const lines = [columns.map(quote).join(","), ...filteredRows.map((row) => [labels[row.category], row.refNo, row.accRef, row.title, row.discipline, row.location, row.status, row.dueDate, row.sourceSheet].map(quote).join(","))];
+    const lines = [columns.map(quote).join(","), ...filteredRows.map((row) => [labels[row.category], row.subcategory, row.refNo, row.accRef, row.title, row.discipline, row.location, row.status, row.dueDate, row.sourceSheet].map(quote).join(","))];
     const blob = new Blob(["\uFEFF" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -293,8 +304,8 @@ export function Dashboard({ user }: { user: User }) {
 
               <div className="overview-grid">
                 <section className="panel category-panel">
-                  <div className="panel-heading"><div><h2>Register workload</h2><p>Open and overdue items by main category</p></div><button className="text-button" onClick={() => { setCategoryFilter("All"); setFilterMode("all"); setSection("Register"); }}>View all <span>→</span></button></div>
-                  <div className="category-list">{categoryStats.map((item) => <CategoryRow key={item.category} item={item} onClick={() => { setCategoryFilter(item.category); setFilterMode("all"); setSection("Register"); }} />)}</div>
+                  <div className="panel-heading"><div><h2>Register workload</h2><p>Open and overdue items by main category</p></div><button className="text-button" onClick={() => { setCategoryFilter("All"); setSubcategoryFilter("All"); setFilterMode("all"); setSection("Register"); }}>View all <span>→</span></button></div>
+                  <div className="category-list">{categoryStats.map((item) => <CategoryRow key={item.category} item={item} onClick={() => { setCategoryFilter(item.category); setSubcategoryFilter("All"); setFilterMode("all"); setSection("Register"); }} />)}</div>
                   <div className="legend-row"><span><i className="legend-open" />Open/follow-up</span><span><i className="legend-overdue" />Dated overdue</span></div>
                 </section>
                 <section className="panel follow-panel">
@@ -326,13 +337,14 @@ export function Dashboard({ user }: { user: User }) {
                 <div className="register-title"><div><h2>All register rows</h2><p>{filteredRows.length.toLocaleString("en-MY")} shown · updates refresh every 30 seconds</p></div></div>
                 <div className="register-controls">
                   <label className="search-box"><Search size={16} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search reference, title, block…" /></label>
-                  <label className="select-box"><Filter size={15} /><select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value as Category | "All")}><option value="All">All categories</option>{categories.map((category) => <option key={category} value={category}>{labels[category]}</option>)}</select></label>
+                  <label className="select-box"><Filter size={15} /><select value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value as Category | "All"); setSubcategoryFilter("All"); }}><option value="All">All categories</option>{categories.map((category) => <option key={category} value={category}>{labels[category]}</option>)}</select></label>
+                  <label className="select-box subcategory-filter"><select aria-label="Filter by subcategory" value={subcategoryFilter} onChange={(e) => setSubcategoryFilter(e.target.value)}><option value="All">All subcategories</option>{subcategories.map((subcategory) => <option key={subcategory} value={subcategory}>{subcategory}</option>)}</select></label>
                   <label className="select-box status-filter"><select value={filterMode} onChange={(e) => setFilterMode(e.target.value as FilterMode)}><option value="all">All statuses</option><option value="open">Open/follow-up</option><option value="overdue">Dated overdue</option><option value="due-soon">Due in 7 days</option><option value="closed">Closed</option></select></label>
                 </div>
               </div>
               <div className="table-wrap">
-                <table><thead><tr><th>Category</th><th>Reference</th><th>Title / subject</th><th>Trade · location</th><th>Status</th><th>Target date</th><th>Source</th></tr></thead>
-                  <tbody>{filteredRows.slice(0, 500).map((row) => <tr key={row.id} onClick={() => startEdit(row)} tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter") startEdit(row); }}><td><span className={`category-tag tag-${row.category === "Submission" ? "blue" : row.category === "Inspection" ? "teal" : row.category === "Test" ? "violet" : "orange"}`}>{shortCategory(row.category)}</span></td><td><span className="reference-text">{row.refNo}</span>{row.accRef && <small className="acc-reference">ACC · {row.accRef}</small>}</td><td className="title-cell"><strong>{row.title}</strong></td><td><span>{[row.discipline, row.location].filter(Boolean).join(" · ") || "—"}</span></td><td><span className={`status-pill ${statusTone(row.status,row.state)}`}><i />{row.status}</span></td><td className={isOverdue(row,today) ? "date-overdue" : ""}>{formatDate(row.dueDate)}{isOverdue(row,today) && <small>Overdue</small>}</td><td><span className="source-chip">{row.sourceSheet}</span></td></tr>)}</tbody>
+                <table><thead><tr><th>Category</th><th>Subcategory</th><th>Reference</th><th>Title / subject</th><th>Trade · location</th><th>Status</th><th>Target date</th></tr></thead>
+                  <tbody>{filteredRows.slice(0, 500).map((row) => <tr key={row.id} onClick={() => startEdit(row)} tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter") startEdit(row); }}><td><span className={`category-tag tag-${row.category === "Submission" ? "blue" : row.category === "Inspection" ? "teal" : row.category === "Test" ? "violet" : "orange"}`}>{shortCategory(row.category)}</span></td><td><span className="source-chip">{row.subcategory}</span></td><td><span className="reference-text">{row.refNo}</span>{row.accRef && <small className="acc-reference">ACC · {row.accRef}</small>}</td><td className="title-cell"><strong>{row.title}</strong></td><td><span>{[row.discipline, row.location].filter(Boolean).join(" · ") || "—"}</span></td><td><span className={`status-pill ${statusTone(row.status,row.state)}`}><i />{row.status}</span></td><td className={isOverdue(row,today) ? "date-overdue" : ""}>{formatDate(row.dueDate)}{isOverdue(row,today) && <small>Overdue</small>}</td></tr>)}</tbody>
                 </table>
                 {filteredRows.length === 0 && <div className="empty-state register-empty"><Search size={23} /><strong>No matching records</strong><span>Try a different filter or search phrase.</span></div>}
                 {filteredRows.length > 500 && <div className="table-limit">Showing first 500 of {filteredRows.length.toLocaleString("en-MY")} rows. Use search and filters to narrow the list.</div>}
@@ -344,7 +356,7 @@ export function Dashboard({ user }: { user: User }) {
         </div>
       </section>
 
-      {modalOpen && <RecordModal form={form} setForm={setForm} editing={editing} saving={saving} error={formError} onClose={() => setModalOpen(false)} onSubmit={saveRecord} />}
+      {modalOpen && <RecordModal sheets={data?.sheets ?? []} form={form} setForm={setForm} editing={editing} saving={saving} error={formError} onClose={() => setModalOpen(false)} onSubmit={saveRecord} />}
       {toast && <div className="toast" role="status"><Check size={17} />{toast}</div>}
     </main>
   );
@@ -369,7 +381,8 @@ function shortCategory(category: Category) {
   return category === "NCR & Observation" ? "NCR / OBS" : category === "Inspection" ? "RFWI / MRI" : category === "Submission" ? "SUBMISSION" : "TEST";
 }
 
-function RecordModal({ form, setForm, editing, saving, error, onClose, onSubmit }: {
+function RecordModal({ sheets, form, setForm, editing, saving, error, onClose, onSubmit }: {
+  sheets: DashboardData["sheets"];
   form: FormValue;
   setForm: React.Dispatch<React.SetStateAction<FormValue>>;
   editing: RecordRow | null;
@@ -381,7 +394,8 @@ function RecordModal({ form, setForm, editing, saving, error, onClose, onSubmit 
   useEffect(() => { const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); }; window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey); }, [onClose]);
   const set = (key: keyof FormValue, value: string) => setForm((current) => ({ ...current, [key]: value }));
   return <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}><section className="record-modal" role="dialog" aria-modal="true" aria-labelledby="record-modal-title"><div className="modal-accent" /><header className="modal-heading"><div><span className="eyebrow">QAQC REGISTER</span><h2 id="record-modal-title">{editing ? "Update register record" : "Add register record"}</h2><p>{editing ? `Source: ${editing.sourceSheet}${editing.sourceRow ? ` · row ${editing.sourceRow}` : ""}` : "Enter a record into the shared dashboard register."}</p></div><button className="icon-button" onClick={onClose} aria-label="Close form"><X size={19} /></button></header><form onSubmit={onSubmit} className="record-form">
-    <div className="form-grid"><Field label="Record type" required><select value={form.category} onChange={(e) => { const category = e.target.value as Category; setForm((current) => ({ ...current, category, status: statusOptions[category][0] })); }}>{categories.map((category) => <option key={category} value={category}>{labels[category]}</option>)}</select></Field><Field label="Status" required><select value={form.status} onChange={(e) => set("status", e.target.value)}>{statusOptions[form.category].map((status) => <option key={status}>{status}</option>)}</select></Field>
+    <div className="form-grid"><Field label="Record type" required><select value={form.category} onChange={(e) => { const category = e.target.value as Category; setForm((current) => ({ ...current, category, subcategory: "", status: statusOptions[category][0] })); }}>{categories.map((category) => <option key={category} value={category}>{labels[category]}</option>)}</select></Field><Field label="Subcategory / workbook tab" required><select value={form.subcategory} onChange={(e) => set("subcategory", e.target.value)}><option value="">Select subcategory</option>{sheets.filter((sheet) => sheet.category === form.category).map((sheet) => <option key={sheet.name} value={sheet.name.trim()}>{sheet.name.trim()}</option>)}</select></Field>
+    <Field label="Status" required><select value={form.status} onChange={(e) => set("status", e.target.value)}>{statusOptions[form.category].map((status) => <option key={status}>{status}</option>)}</select></Field>
     <Field label="Reference number" required><input value={form.refNo} onChange={(e) => set("refNo", e.target.value)} maxLength={160} placeholder="e.g. BTP-A-SDSB-RFI-001" autoFocus /></Field><Field label="ACC reference"><input value={form.accRef} onChange={(e) => set("accRef", e.target.value)} maxLength={160} placeholder="ACC ID / Submittal No." /></Field>
     <Field label="Title / subject" required wide><input value={form.title} onChange={(e) => set("title", e.target.value)} maxLength={600} placeholder="Describe the submission, inspection or issue" /></Field>
     <Field label="Trade / discipline"><input value={form.discipline} onChange={(e) => set("discipline", e.target.value)} maxLength={120} placeholder="C&S, M&E, Architecture…" /></Field><Field label="Block / location"><input value={form.location} onChange={(e) => set("location", e.target.value)} maxLength={200} placeholder="Block, level, zone or site area" /></Field>
