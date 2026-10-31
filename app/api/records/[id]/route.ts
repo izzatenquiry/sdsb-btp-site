@@ -5,6 +5,7 @@ import { getDb } from "@/db";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { qaqcAudit, qaqcRecords } from "@/db/schema";
 import workbookSnapshot from "@/lib/workbook-snapshot.json";
+import { buildRegisterSnapshot, isAllowedRegisterRecord, type SnapshotRecord } from "@/lib/register-catalog";
 
 const updateInput = z.object({
   category: z.enum(["Submission", "Inspection", "Test", "NCR & Observation"]),
@@ -18,6 +19,10 @@ const updateInput = z.object({
   dueDate: z.string().nullable().optional(),
   recordDate: z.string().nullable().optional(),
   notes: z.string().trim().max(3000).optional().default(""),
+}).superRefine((input, context) => {
+  if (!isAllowedRegisterRecord(input.category, input.subcategory)) {
+    context.addIssue({ code: "custom", message: "Choose one of the 22 internal registers and its matching category." });
+  }
 });
 
 function statusState(status: string): "open" | "closed" | "unknown" {
@@ -47,8 +52,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const db = getDb();
   try {
     const existing = await db.select().from(qaqcRecords).where(eq(qaqcRecords.id, id)).limit(1);
-    const snapshot = workbookSnapshot.records.find((row) => row.id === id);
-    if (!existing.length && !snapshot) return Response.json({ error: "Record not found." }, { status: 404 });
+    const snapshot = buildRegisterSnapshot(workbookSnapshot.records as SnapshotRecord[]).find((row) => row.id === id);
+    const existingIsAllowed = existing[0] && isAllowedRegisterRecord(String(existing[0].category), String(existing[0].subcategory));
+    if ((!existing.length && !snapshot) || (existing.length && !existingIsAllowed && !snapshot)) return Response.json({ error: "Record not found." }, { status: 404 });
 
     const previous = existing[0] ?? snapshot;
     const now = new Date().toISOString();

@@ -5,6 +5,7 @@ import { getDb } from "@/db";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 import { qaqcAudit, qaqcRecords } from "@/db/schema";
 import workbookSnapshot from "@/lib/workbook-snapshot.json";
+import { buildRegisterSnapshot, isAllowedRegisterRecord, registerCatalog, type SnapshotRecord } from "@/lib/register-catalog";
 
 const recordInput = z.object({
   id: z.string().min(1).max(96).optional(),
@@ -20,6 +21,10 @@ const recordInput = z.object({
   recordDate: z.string().nullable().optional(),
   notes: z.string().trim().max(3000).optional().default(""),
   sourceSheet: z.string().trim().max(120).optional().default("Dashboard entry"),
+}).superRefine((input, context) => {
+  if (!isAllowedRegisterRecord(input.category, input.subcategory)) {
+    context.addIssue({ code: "custom", message: "Choose one of the 22 internal registers and its matching category." });
+  }
 });
 
 function statusState(status: string): "open" | "closed" | "unknown" {
@@ -56,12 +61,35 @@ export async function GET() {
   }
 
   const overrides = new Map(saved.map((row) => [String(row.id), row]));
-  const snapshotRows = workbookSnapshot.records.map((record) => {
+  const registerRows = buildRegisterSnapshot(workbookSnapshot.records as SnapshotRecord[]);
+  const snapshotRows = registerRows.map((record) => {
     const savedRecord = overrides.get(record.id) ?? {};
-    return { ...record, ...savedRecord, subcategory: String(savedRecord.subcategory ?? record.sourceSheet).trim() };
+    const overrideIsAllowed = isAllowedRegisterRecord(String(savedRecord.category ?? ""), String(savedRecord.subcategory ?? ""));
+    return {
+      ...record,
+      ...(overrideIsAllowed ? savedRecord : {}),
+      category: overrideIsAllowed ? String(savedRecord.category) : record.category,
+      subcategory: overrideIsAllowed ? String(savedRecord.subcategory) : record.subcategory,
+      sourceSheet: record.sourceSheet,
+    };
   });
-  const snapshotIds = new Set(workbookSnapshot.records.map((record) => record.id));
-  const newRows = saved.filter((row) => !snapshotIds.has(String(row.id))).map((row) => ({ ...row, subcategory: String(row.subcategory ?? row.sourceSheet).trim() }));
+  const snapshotIds = new Set(registerRows.map((row) => row.id));
+  const newRows = saved.filter((row) => !snapshotIds.has(String(row.id)))
+    .filter((row) => isAllowedRegisterRecord(String(row.category ?? ""), String(row.subcategory ?? "")))
+    .map((row) => ({
+      ...row,
+      category: String(row.category),
+      subcategory: String(row.subcategory),
+    }));
+  const records = [...snapshotRows, ...newRows];
+  const registerSheets = registerCatalog.map((register) => ({
+    name: register.name,
+    category: register.category,
+    records: records.filter((row) => row.subcategory === register.name).length,
+    parsed: true,
+  }));
+  const selectedSourceSheets = new Set(registerCatalog.flatMap((register) => register.sourceSheets ?? []));
+  const dataQualityIssues = workbookSnapshot.dataQualityIssues.filter((issue) => selectedSourceSheets.has(issue.sheet.trim()));
   return Response.json(
     {
       project: workbookSnapshot.project,
@@ -69,10 +97,10 @@ export async function GET() {
       snapshotAsOf: workbookSnapshot.snapshotAsOf,
       accConnected: false,
       note: workbookSnapshot.note,
-      dataQualityIssues: workbookSnapshot.dataQualityIssues,
-      sheets: workbookSnapshot.sheets,
+      dataQualityIssues,
+      sheets: registerSheets,
       storageAvailable,
-      records: [...snapshotRows, ...newRows],
+      records,
     },
     { headers: { "Cache-Control": "private, no-store" } },
   );

@@ -6,8 +6,9 @@ import {
   ChevronDown, CirclePlus, ClipboardList, CloudOff, FileCheck2, Filter,
   LayoutDashboard, LoaderCircle, Search, ShieldAlert, X,
 } from "lucide-react";
+import { registerCatalog, type RegisterCategory } from "@/lib/register-catalog";
 
-type Category = "Submission" | "Inspection" | "Test" | "NCR & Observation";
+type Category = RegisterCategory;
 type State = "open" | "closed" | "unknown";
 type RecordRow = {
   id: string;
@@ -142,8 +143,7 @@ export function Dashboard({ user }: { user: User }) {
     .filter((sheet) => sheet.category && (categoryFilter === "All" || sheet.category === categoryFilter))
     .map((sheet) => sheet.name.trim())
     .filter(Boolean)
-    .filter((name, index, names) => names.indexOf(name) === index)
-    .sort((a, b) => a.localeCompare(b)), [data?.sheets, categoryFilter]);
+    .filter((name, index, names) => names.indexOf(name) === index), [data?.sheets, categoryFilter]);
   const today = localDate();
   const stats = useMemo(() => {
     const open = rows.filter(isOpen).length;
@@ -175,7 +175,16 @@ export function Dashboard({ user }: { user: User }) {
 
   const categoryStats = useMemo(() => categories.map((category) => {
     const subset = rows.filter((row) => row.category === category);
-    return { category, total: subset.length, open: subset.filter(isOpen).length, overdue: subset.filter((row) => isOverdue(row, today)).length };
+    const subcategories = registerCatalog.filter((register) => register.category === category).map((register) => {
+      const registerRows = subset.filter((row) => row.subcategory === register.name);
+      return {
+        name: register.name,
+        total: registerRows.length,
+        open: registerRows.filter(isOpen).length,
+        overdue: registerRows.filter((row) => isOverdue(row, today)).length,
+      };
+    });
+    return { category, total: subset.length, open: subset.filter(isOpen).length, overdue: subset.filter((row) => isOverdue(row, today)).length, subcategories };
   }), [rows, today]);
 
   function startNew() {
@@ -273,7 +282,7 @@ export function Dashboard({ user }: { user: User }) {
             <div>
               <div className="eyebrow">PROJECT QAQC</div>
               <h1>{isOverview ? "Quality control overview" : "QAQC registers"}</h1>
-              <p>{isOverview ? "Track submissions, inspections, tests and site observations in one place." : "Search and maintain the workbook-derived register snapshot."}</p>
+              <p>{isOverview ? "Track the 22 selected QAQC registers across inspections, submissions, tests and site follow-up." : "Search and maintain the selected internal register snapshot."}</p>
             </div>
             <div className="heading-actions">
               <button className="button-secondary" onClick={downloadCsv}><ArrowDownToLine size={16} />Export CSV</button>
@@ -296,7 +305,7 @@ export function Dashboard({ user }: { user: User }) {
           ) : isOverview ? (
             <>
               <div className="kpi-grid">
-                <Kpi label="REGISTER ROWS" value={stats.total.toLocaleString("en-MY")} detail="Across 54 workbook tabs" tone="blue" icon={<ClipboardList size={18} />} onClick={() => { setCategoryFilter("All"); openFilter("all"); }} />
+                <Kpi label="REGISTER ROWS" value={stats.total.toLocaleString("en-MY")} detail="Across 22 selected registers" tone="blue" icon={<ClipboardList size={18} />} onClick={() => { setCategoryFilter("All"); openFilter("all"); }} />
                 <Kpi label="OPEN / FOLLOW-UP" value={stats.open.toLocaleString("en-MY")} detail="Status recorded as open" tone="amber" icon={<Bell size={18} />} onClick={() => { setCategoryFilter("All"); openFilter("open"); }} />
                 <Kpi label="DATED OVERDUE" value={stats.overdue.toLocaleString("en-MY")} detail="Open items past target date" tone="rose" icon={<ShieldAlert size={18} />} onClick={() => { setCategoryFilter("All"); openFilter("overdue"); }} />
                 <Kpi label="DUE IN 7 DAYS" value={stats.dueSoon.toLocaleString("en-MY")} detail="Open items with a due date" tone="teal" icon={<CalendarClock size={18} />} onClick={() => { setCategoryFilter("All"); openFilter("due-soon"); }} />
@@ -304,12 +313,12 @@ export function Dashboard({ user }: { user: User }) {
 
               <div className="overview-grid">
                 <section className="panel category-panel">
-                  <div className="panel-heading"><div><h2>Register workload</h2><p>Open and overdue items by main category</p></div><button className="text-button" onClick={() => { setCategoryFilter("All"); setSubcategoryFilter("All"); setFilterMode("all"); setSection("Register"); }}>View all <span>→</span></button></div>
-                  <div className="category-list">{categoryStats.map((item) => <CategoryRow key={item.category} item={item} onClick={() => { setCategoryFilter(item.category); setSubcategoryFilter("All"); setFilterMode("all"); setSection("Register"); }} />)}</div>
+                  <div className="panel-heading"><div><h2>Registers by category</h2><p>22 internal registers · click a register to open its rows</p></div><button className="text-button" onClick={() => { setCategoryFilter("All"); setSubcategoryFilter("All"); setFilterMode("all"); setSection("Register"); }}>View all <span>→</span></button></div>
+                  <div className="category-list">{categoryStats.map((item) => <CategoryRow key={item.category} item={item} onClick={() => { setCategoryFilter(item.category); setSubcategoryFilter("All"); setFilterMode("all"); setSection("Register"); }} onSelectSubcategory={(subcategory) => { setCategoryFilter(item.category); setSubcategoryFilter(subcategory); setFilterMode("all"); setSection("Register"); }} />)}</div>
                   <div className="legend-row"><span><i className="legend-open" />Open/follow-up</span><span><i className="legend-overdue" />Dated overdue</span></div>
                 </section>
                 <section className="panel follow-panel">
-                  <div className="panel-heading"><div><h2>Action list</h2><p>Overdue items with a recorded status and target date</p></div><span className="count-badge badge-rose">{stats.overdue}</span></div>
+                  <div className="panel-heading"><div><h2>Action required</h2><p>Overdue records from the selected registers</p></div><span className="count-badge badge-rose">{stats.overdue}</span></div>
                   <div className="action-list">
                     {rows.filter((row) => isOverdue(row, today)).sort((a,b) => (a.dueDate ?? "").localeCompare(b.dueDate ?? "")).slice(0,6).map((row) => <ActionRow key={row.id} row={row} onClick={() => startEdit(row)} />)}
                     {stats.overdue === 0 && <div className="empty-state"><Check size={23} /><strong>No dated overdue items</strong><span>Overdue status is calculated only where the source has a due date and an open status.</span></div>}
@@ -320,13 +329,13 @@ export function Dashboard({ user }: { user: User }) {
 
               <div className="lower-grid">
                 <section className="panel health-panel">
-                  <div className="panel-heading"><div><h2>Data checks</h2><p>Known workbook issues that affect trust in the totals</p></div><span className="count-badge badge-amber">{data?.dataQualityIssues.length ?? 0}</span></div>
-                  <div className="quality-list">{data?.dataQualityIssues.map((issue) => <div key={`${issue.sheet}-${issue.cell ?? issue.field}`} className="quality-row"><span className="quality-icon"><AlertTriangle size={15} /></span><div><strong>{issue.sheet}{issue.cell ? `!${issue.cell}` : ` · ${issue.field}`}</strong><span>{issue.issue} — {issue.effect}</span></div></div>)}</div>
+                  <div className="panel-heading"><div><h2>Data checks</h2><p>Source issues in the 22 selected registers</p></div><span className="count-badge badge-amber">{data?.dataQualityIssues.length ?? 0}</span></div>
+                  <div className="quality-list">{data?.dataQualityIssues.map((issue) => <div key={`${issue.sheet}-${issue.cell ?? issue.field}`} className="quality-row"><span className="quality-icon"><AlertTriangle size={15} /></span><div><strong>{issue.sheet}{issue.cell ? `!${issue.cell}` : ` · ${issue.field}`}</strong><span>{issue.issue} — {issue.effect}</span></div></div>)}{data?.dataQualityIssues.length === 0 && <div className="quality-empty"><Check size={16} /><span>No flagged source issues in this selected register set.</span></div>}</div>
                   <div className="quality-foot">{stats.unknown.toLocaleString("en-MY")} rows have no usable status in the source and are excluded from open/overdue counts.</div>
                 </section>
                 <section className="panel source-panel">
-                  <div className="panel-heading"><div><h2>Source coverage</h2><p>Workbook tabs reviewed for the initial dashboard</p></div><span className="count-badge badge-blue">{data?.sheets.length ?? 0}/54</span></div>
-                  <div className="coverage-stats"><div><strong>{rows.length.toLocaleString("en-MY")}</strong><span>rows indexed</span></div><div><strong>{data?.sheets.filter((sheet) => sheet.records > 0).length ?? 0}</strong><span>tabs with rows</span></div><div><strong>{stats.unknown.toLocaleString("en-MY")}</strong><span>status unclassified</span></div></div>
+                  <div className="panel-heading"><div><h2>Register scope</h2><p>Only the internal list selected for this dashboard</p></div><span className="count-badge badge-blue">{data?.sheets.length ?? 0}/22</span></div>
+                  <div className="coverage-stats"><div><strong>{rows.length.toLocaleString("en-MY")}</strong><span>rows indexed</span></div><div><strong>{data?.sheets.filter((sheet) => sheet.records > 0).length ?? 0}</strong><span>registers with rows</span></div><div><strong>{stats.unknown.toLocaleString("en-MY")}</strong><span>status unclassified</span></div></div>
                   <p className="source-caption">Snapshot from <b>{data?.sourceFile}</b>. Last workbook revision: {formatDate(data?.snapshotAsOf)}. ACC synchronization is not connected.</p>
                 </section>
               </div>
@@ -365,10 +374,13 @@ export function Dashboard({ user }: { user: User }) {
 function Kpi({ label, value, detail, tone, icon, onClick }: { label: string; value: string; detail: string; tone: string; icon: React.ReactNode; onClick: () => void }) {
   return <button className={`kpi-card kpi-${tone}`} onClick={onClick}><span className="kpi-icon">{icon}</span><span className="kpi-copy"><small>{label}</small><strong>{value}</strong><span>{detail}</span></span></button>;
 }
-function CategoryRow({ item, onClick }: { item: { category: Category; total: number; open: number; overdue: number }; onClick: () => void }) {
+function CategoryRow({ item, onClick, onSelectSubcategory }: { item: { category: Category; total: number; open: number; overdue: number; subcategories: { name: string; total: number; open: number; overdue: number }[] }; onClick: () => void; onSelectSubcategory: (name: string) => void }) {
   const percentage = item.total ? Math.max(3, Math.round(item.open / item.total * 100)) : 0;
   const overdueWidth = item.total ? Math.max(0, Math.round(item.overdue / item.total * 100)) : 0;
-  return <button className="category-row" onClick={onClick}><span className={`category-symbol symbol-${item.category === "Submission" ? "blue" : item.category === "Inspection" ? "teal" : item.category === "Test" ? "violet" : "orange"}`}>{item.category === "Submission" ? <FileCheck2 size={17} /> : item.category === "Inspection" ? <ClipboardList size={17} /> : item.category === "Test" ? <Activity size={17} /> : <ShieldAlert size={17} />}</span><span className="category-info"><span className="category-name">{labels[item.category]}</span><span className="bar-track"><i style={{ width: `${percentage}%` }} /><b style={{ width: `${overdueWidth}%` }} /></span></span><span className="category-total"><strong>{item.total.toLocaleString("en-MY")}</strong><small>{item.open} open</small></span><span className="category-overdue">{item.overdue}</span></button>;
+  return <section className="register-category-group">
+    <button className="category-row" onClick={onClick}><span className={`category-symbol symbol-${item.category === "Submission" ? "blue" : item.category === "Inspection" ? "teal" : item.category === "Test" ? "violet" : "orange"}`}>{item.category === "Submission" ? <FileCheck2 size={17} /> : item.category === "Inspection" ? <ClipboardList size={17} /> : item.category === "Test" ? <Activity size={17} /> : <ShieldAlert size={17} />}</span><span className="category-info"><span className="category-name">{labels[item.category]} <small>{item.subcategories.length} registers</small></span><span className="bar-track"><i style={{ width: `${percentage}%` }} /><b style={{ width: `${overdueWidth}%` }} /></span></span><span className="category-total"><strong>{item.total.toLocaleString("en-MY")}</strong><small>{item.open} open</small></span><span className="category-overdue">{item.overdue}</span></button>
+    <div className="register-subcategories">{item.subcategories.map((register) => <button className="register-subcategory" key={register.name} onClick={() => onSelectSubcategory(register.name)}><span className="subcategory-name">{register.name}</span><span className="subcategory-count">{register.total} rows</span><span className={register.overdue ? "subcategory-overdue" : "subcategory-count"}>{register.overdue ? `${register.overdue} overdue` : `${register.open} open`}</span></button>)}</div>
+  </section>;
 }
 function ActionRow({ row, onClick }: { row: RecordRow; onClick: () => void }) {
   return <button className="action-row" onClick={onClick}><span className="action-mark"><AlertTriangle size={15} /></span><span className="action-main"><strong>{row.refNo}</strong><span>{row.title}</span><small>{shortCategory(row.category)} · {labels[row.category]}</small></span><span className="action-date"><b>{formatDate(row.dueDate)}</b><small>{daysLate(row.dueDate)}d late</small></span></button>;
