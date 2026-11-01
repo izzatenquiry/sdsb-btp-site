@@ -3,9 +3,9 @@
 import { ReactNode, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-/** Standard unified modal footprint for all SDSB Main Modals (+20% width: 84rem * 1.2 = 100.8rem) */
+/** Standard unified modal footprint for all SDSB Main Modals (+10% width: 84rem * 1.1 = 92.4rem) */
 export const STANDARD_MODAL_PANEL_CLASS =
-  "relative z-10 flex h-[min(94vh,54rem)] w-full max-w-[100.8rem] flex-col overflow-hidden rounded-2xl border border-line bg-paper-elevated shadow-2xl shadow-ink/30 max-sm:h-[min(98vh,100%)]";
+  "relative z-10 flex h-[min(94vh,54rem)] w-full max-w-[92.4rem] flex-col overflow-hidden rounded-2xl border border-line bg-paper-elevated shadow-2xl shadow-ink/30 max-sm:h-[min(98vh,100%)]";
 
 /** Shared shell — same footprint as modals. */
 export const MODAL_SHELL_CLASS = STANDARD_MODAL_PANEL_CLASS;
