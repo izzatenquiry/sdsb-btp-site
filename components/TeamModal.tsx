@@ -533,7 +533,7 @@ export function TeamModal({ open, onClose }: Props) {
       )}
 
       {/* Main Modal Body (Fitted View Without Scrolling) */}
-      <div className="min-h-0 flex-1 overflow-y-auto lg:overflow-y-hidden overflow-x-auto bg-slate-100/90 dark:bg-slate-900 p-2 sm:p-2.5 select-none flex flex-col justify-center items-center">
+      <div className="min-h-0 flex-1 overflow-y-auto lg:overflow-y-hidden overflow-x-auto bg-paper/40 p-2 sm:p-2.5 select-none flex flex-col justify-center items-center">
         {viewMode === "chart" ? (
           /* ================= SLEEK & FITTED ORG CHART WITH CLEAN ORTHOGONAL BUSES ================= */
           <div className="min-w-[800px] max-w-[820px] mx-auto flex flex-col items-center justify-center my-auto">
@@ -555,7 +555,7 @@ export function TeamModal({ open, onClose }: Props) {
             </div>
 
             {/* Line down from PM to Aiman */}
-            <svg width="800" height="20" viewBox="0 0 800 20" className="w-[800px] h-5 block text-slate-400 dark:text-slate-500 shrink-0">
+            <svg width="800" height="20" viewBox="0 0 800 20" className="w-[800px] h-5 block text-line shrink-0">
               <line x1="400" y1="0" x2="400" y2="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
 
@@ -606,7 +606,7 @@ export function TeamModal({ open, onClose }: Props) {
             </div>
 
             {/* Clean Orthogonal Distribution Bus from Aiman (400) to 4 Packages (100, 300, 500, 700) */}
-            <svg width="800" height="22" viewBox="0 0 800 22" className="w-[800px] h-5.5 block text-slate-400 dark:text-slate-500 shrink-0">
+            <svg width="800" height="22" viewBox="0 0 800 22" className="w-[800px] h-5.5 block text-line shrink-0">
               <line x1="400" y1="0" x2="400" y2="11" stroke="currentColor" strokeWidth="2" />
               <line x1="100" y1="11" x2="700" y2="11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               <line x1="100" y1="11" x2="100" y2="22" stroke="currentColor" strokeWidth="2" />
@@ -659,7 +659,7 @@ export function TeamModal({ open, onClose }: Props) {
             </div>
 
             {/* Clean Orthogonal Collection Bus from 4 Packages (100, 300, 500, 700) down to Zhou (400) */}
-            <svg width="800" height="22" viewBox="0 0 800 22" className="w-[800px] h-5.5 block text-slate-400 dark:text-slate-500 shrink-0">
+            <svg width="800" height="22" viewBox="0 0 800 22" className="w-[800px] h-5.5 block text-line shrink-0">
               <line x1="100" y1="0" x2="100" y2="11" stroke="currentColor" strokeWidth="2" />
               <line x1="300" y1="0" x2="300" y2="11" stroke="currentColor" strokeWidth="2" />
               <line x1="500" y1="0" x2="500" y2="11" stroke="currentColor" strokeWidth="2" />
@@ -685,7 +685,7 @@ export function TeamModal({ open, onClose }: Props) {
             </div>
 
             {/* Clean Orthogonal Distribution Bus from Zhou (400) to 4 Site Supervisors (100, 300, 500, 700) */}
-            <svg width="800" height="22" viewBox="0 0 800 22" className="w-[800px] h-5.5 block text-slate-400 dark:text-slate-500 shrink-0">
+            <svg width="800" height="22" viewBox="0 0 800 22" className="w-[800px] h-5.5 block text-line shrink-0">
               <line x1="400" y1="0" x2="400" y2="11" stroke="currentColor" strokeWidth="2" />
               <line x1="100" y1="11" x2="700" y2="11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
               <line x1="100" y1="11" x2="100" y2="22" stroke="currentColor" strokeWidth="2" />
@@ -1196,7 +1196,7 @@ function PackageCard({
 
   return (
     <div
-      className={`w-full max-w-[185px] rounded-xl border bg-white dark:bg-slate-800 shadow-xs transition hover:shadow-md p-2 flex flex-col ${borderMap[color]}`}
+      className={`w-full max-w-[185px] rounded-xl border bg-paper-elevated shadow-xs transition hover:shadow-md p-2 flex flex-col ${borderMap[color]}`}
     >
       {/* Header Bar */}
       <div className="flex items-center justify-between border-b border-line/60 pb-1.5 mb-1.5 px-0.5">
@@ -1204,7 +1204,7 @@ function PackageCard({
           {packageTitle}
         </span>
         <span
-          className="text-[8px] font-bold px-1.5 py-0.2 rounded border bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-line"
+          className="text-[8px] font-bold px-1.5 py-0.2 rounded border bg-field text-ink-soft border-line"
         >
           {engineers.length > 1 ? `${engineers.length} Engineers` : "QAQC Eng"}
         </span>
@@ -1218,28 +1218,28 @@ function PackageCard({
             <div
               key={eng.id}
               onClick={() => onSelectStaff(eng)}
-              className="group rounded-lg p-1.5 transition hover:bg-slate-50 dark:hover:bg-slate-700/60 cursor-pointer select-none text-ink border border-transparent hover:border-line/60"
+              className="group rounded-lg p-1.5 transition hover:bg-paper cursor-pointer select-none text-ink border border-transparent hover:border-line/60"
               title={`Click to edit email for ${eng.name}`}
             >
               {idx > 0 && <div className="border-t border-line/50 mb-1.5" />}
               <div className="flex items-center justify-between gap-1">
                 <div className="flex items-center gap-1 min-w-0">
                   <HardHat className="h-3.5 w-3.5 text-accent shrink-0" />
-                  <span className="text-[11px] font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-accent transition">
+                  <span className="text-[11px] font-bold text-ink truncate group-hover:text-accent transition">
                     {eng.name}
                   </span>
                 </div>
                 {eng.discipline && (
-                  <span className="rounded bg-slate-100 dark:bg-slate-700/70 px-1 py-0.2 text-[7.5px] font-bold text-slate-600 dark:text-slate-300 border border-line shrink-0">
+                  <span className="rounded bg-paper px-1 py-0.2 text-[7.5px] font-bold text-ink-soft border border-line shrink-0">
                     {eng.discipline}
                   </span>
                 )}
               </div>
 
               <div className="flex items-center justify-between gap-1 mt-1 text-[9px]">
-                <span className="text-slate-500 dark:text-slate-400 font-mono truncate">{eng.phone}</span>
+                <span className="text-muted font-mono truncate">{eng.phone}</span>
                 {hasEmail ? (
-                  <span className="text-teal-700 dark:text-teal-300 font-mono truncate max-w-[90px] flex items-center gap-0.5 font-semibold">
+                  <span className="text-accent font-mono truncate max-w-[90px] flex items-center gap-0.5 font-semibold">
                     <Mail className="h-2.5 w-2.5 shrink-0" />
                     <span className="truncate">{eng.email.split("@")[0]}</span>
                   </span>
@@ -1279,17 +1279,17 @@ function ModernOrgCard({
 
   const themeStyles = {
     executive:
-      "border-amber-400 dark:border-amber-500 bg-white dark:bg-slate-800 shadow-xs hover:border-amber-500 hover:shadow-md",
+      "border-amber-400 dark:border-amber-500 bg-paper-elevated shadow-xs hover:border-amber-500 hover:shadow-md",
     manager:
-      "border-emerald-500 dark:border-emerald-400 bg-white dark:bg-slate-800 shadow-xs hover:border-emerald-400 hover:shadow-md",
+      "border-emerald-500 dark:border-emerald-400 bg-paper-elevated shadow-xs hover:border-emerald-400 hover:shadow-md",
     dc:
-      "border-teal-500 dark:border-teal-400 bg-white dark:bg-slate-800 ring-2 ring-teal-500/20 shadow-xs hover:border-teal-400 hover:shadow-md",
+      "border-teal-500 dark:border-teal-400 bg-paper-elevated ring-2 ring-teal-500/20 shadow-xs hover:border-teal-400 hover:shadow-md",
     engineer:
-      "border-line bg-white dark:bg-slate-800 shadow-xs hover:border-accent hover:shadow-md",
+      "border-line bg-paper-elevated shadow-xs hover:border-accent hover:shadow-md",
     support:
-      "border-sky-400 dark:border-sky-500 bg-white dark:bg-slate-800 shadow-xs hover:border-sky-300 hover:shadow-md",
+      "border-sky-400 dark:border-sky-500 bg-paper-elevated shadow-xs hover:border-sky-300 hover:shadow-md",
     supervisor:
-      "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xs hover:border-accent hover:shadow-md",
+      "border-line bg-paper-elevated shadow-xs hover:border-accent hover:shadow-md",
   };
 
   const widthClass = fullWidth
@@ -1307,10 +1307,10 @@ function ModernOrgCard({
       {/* Top Header Row with Icon & Badge */}
       <div className="flex items-center justify-between gap-1 mb-1.5">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="grid h-5 w-5 place-items-center rounded-md bg-slate-100 dark:bg-slate-700 border border-line shrink-0">
+          <span className="grid h-5 w-5 place-items-center rounded-md bg-paper border border-line shrink-0">
             {icon}
           </span>
-          <span className="text-[8.5px] font-black uppercase tracking-tight text-slate-700 dark:text-slate-300 truncate">
+          <span className="text-[8.5px] font-black uppercase tracking-tight text-ink-soft truncate">
             {member.role}
           </span>
         </div>
@@ -1320,7 +1320,7 @@ function ModernOrgCard({
             {badgeText}
           </span>
         ) : member.discipline ? (
-          <span className="rounded bg-slate-100 dark:bg-slate-700 px-1.5 py-0.2 text-[8px] font-bold text-slate-600 dark:text-slate-300 border border-line shrink-0">
+          <span className="rounded bg-paper px-1.5 py-0.2 text-[8px] font-bold text-ink-soft border border-line shrink-0">
             {member.discipline}
           </span>
         ) : null}
@@ -1328,10 +1328,10 @@ function ModernOrgCard({
 
       {/* Name and Phone */}
       <div className="mb-1.5 leading-tight">
-        <h4 className="text-[11px] font-black tracking-tight text-slate-900 dark:text-slate-100 truncate group-hover:text-accent transition">
+        <h4 className="text-[11px] font-black tracking-tight text-ink truncate group-hover:text-accent transition">
           {member.name}
         </h4>
-        <div className="flex items-center gap-1 text-[9px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+        <div className="flex items-center gap-1 text-[9px] text-muted font-mono mt-0.5">
           <Phone className="h-2.5 w-2.5 shrink-0" />
           <span className="truncate">{member.phone}</span>
         </div>
@@ -1341,14 +1341,14 @@ function ModernOrgCard({
       <div className="pt-1.5 border-t border-line/60">
         {hasEmail ? (
           <div
-            className="flex items-center justify-between rounded bg-slate-50 dark:bg-slate-900 border border-line px-1.5 py-0.5 text-[9px] font-semibold transition"
+            className="flex items-center justify-between rounded bg-paper border border-line px-1.5 py-0.5 text-[9px] font-semibold transition"
             title={member.email}
           >
             <span className="flex items-center gap-1 text-teal-700 dark:text-teal-300 truncate">
               <Mail className="h-2.5 w-2.5 shrink-0" />
               <span className="truncate font-mono">{member.email.split("@")[0]}</span>
             </span>
-            <Edit3 className="h-2.5 w-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition shrink-0 ml-0.5" />
+            <Edit3 className="h-2.5 w-2.5 text-muted opacity-0 group-hover:opacity-100 transition shrink-0 ml-0.5" />
           </div>
         ) : (
           <div className="flex items-center justify-center gap-0.5 rounded border border-dashed border-amber-500/50 bg-amber-500/10 px-1 py-0.5 text-[8.5px] font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 transition">
