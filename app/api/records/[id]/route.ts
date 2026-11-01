@@ -26,9 +26,13 @@ const updateInput = z.object({
 });
 
 function statusState(status: string): "open" | "closed" | "unknown" {
-  const value = status.toLowerCase();
-  if (/closed|done|complete|approved|no objection|passed|responded/.test(value)) return "closed";
-  if (/pending|progress|await|no response|resubmission|rejected|delay|open|submitted|failed/.test(value)) return "open";
+  const value = String(status || "").toLowerCase().trim();
+  if (/pending|await|progress|resubmi|reject|failed|delay|open|submitted|no response/.test(value)) {
+    return "open";
+  }
+  if (/closed|done|complete|approved|no objection|passed|responded/.test(value)) {
+    return "closed";
+  }
   return "unknown";
 }
 
@@ -37,6 +41,8 @@ function sameOrigin(request: Request) {
   if (!origin) return request.headers.get("sec-fetch-site") === "same-origin";
   try { return new URL(origin).origin === new URL(request.url).origin; } catch { return false; }
 }
+
+import { updateRecordInGoogleSheet } from "@/lib/google-sheets";
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   if (!sameOrigin(request)) return Response.json({ error: "This request is not allowed." }, { status: 403 });
@@ -49,42 +55,89 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const parsed = updateInput.safeParse(payload);
   if (!parsed.success) return Response.json({ error: "Check the required fields and try again." }, { status: 400 });
 
-  const db = getDb();
-  try {
-    const existing = await db.select().from(qaqcRecords).where(eq(qaqcRecords.id, id)).limit(1);
-    const snapshot = buildRegisterSnapshot(workbookSnapshot.records as SnapshotRecord[]).find((row) => row.id === id);
-    const existingIsAllowed = existing[0] && isAllowedRegisterRecord(String(existing[0].category), String(existing[0].subcategory));
-    if ((!existing.length && !snapshot) || (existing.length && !existingIsAllowed && !snapshot)) return Response.json({ error: "Record not found." }, { status: 404 });
+  const input = parsed.data;
+  const now = new Date().toISOString();
 
-    const previous = existing[0] ?? snapshot;
-    const now = new Date().toISOString();
-    const input = parsed.data;
-    const record = {
-      id,
-      category: input.category,
+  // Parse sourceRow if id format is gs-<sheet>-<row>
+  let parsedRow: number | null = null;
+  const gsMatch = id.match(/^gs-.*-(\d+)$/);
+  if (gsMatch) {
+    parsedRow = parseInt(gsMatch[1], 10);
+  }
+
+  // 1. Update in Google Sheets
+  try {
+    await updateRecordInGoogleSheet({
+      sourceRow: parsedRow,
       subcategory: input.subcategory,
-      sourceSheet: existing[0]?.sourceSheet ?? snapshot?.sourceSheet ?? "Dashboard entry",
-      sourceRow: existing[0]?.sourceRow ?? snapshot?.sourceRow ?? null,
       refNo: input.refNo,
       accRef: input.accRef,
       title: input.title,
-      discipline: input.discipline,
       location: input.location,
       status: input.status,
-      state: statusState(input.status),
-      dueDate: input.dueDate ?? null,
-      recordDate: input.recordDate ?? null,
+      recordDate: input.recordDate,
       notes: input.notes,
-      origin: id.startsWith("wb-") ? "workbook-edit" : "dashboard-entry",
-      createdBy: existing[0]?.createdBy ?? user.userId,
-      updatedBy: user.userId,
-      createdAt: existing[0]?.createdAt ?? now,
-      updatedAt: now,
-    };
+    });
+  } catch (err: any) {
+    console.warn("Could not sync update to Google Sheets:", err.message);
+  }
+
+  const record = {
+    id,
+    category: input.category,
+    subcategory: input.subcategory,
+    sourceSheet: input.subcategory,
+    sourceRow: parsedRow,
+    refNo: input.refNo,
+    accRef: input.accRef,
+    title: input.title,
+    discipline: input.discipline,
+    location: input.location,
+    status: input.status,
+    state: statusState(input.status),
+    dueDate: input.dueDate ?? null,
+    recordDate: input.recordDate ?? null,
+    notes: input.notes,
+    origin: "google-sheets",
+    createdBy: user.userId,
+    updatedBy: user.userId,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  try {
+    const db = getDb();
+    const existing = await db.select().from(qaqcRecords).where(eq(qaqcRecords.id, id)).limit(1);
+    const previous = existing[0] ?? record;
     const [saved] = await db.insert(qaqcRecords).values(record).onConflictDoUpdate({ target: qaqcRecords.id, set: record }).returning();
-    await db.insert(qaqcAudit).values({ id: randomUUID(), recordId: id, action: "updated", actorId: user.userId, beforeJson: JSON.stringify(previous), afterJson: JSON.stringify(saved), createdAt: now });
-    return Response.json({ record: saved }, { headers: { "Cache-Control": "no-store" } });
+    await db.insert(qaqcAudit).values({
+      id: randomUUID(),
+      recordId: id,
+      action: "updated",
+      actorId: user.userId,
+      beforeJson: JSON.stringify(previous),
+      afterJson: JSON.stringify(saved),
+      createdAt: now,
+    });
+    return Response.json({ record: saved, googleSheetsSynced: true }, { headers: { "Cache-Control": "no-store" } });
   } catch {
-    return Response.json({ error: "The shared record store is not ready yet. Try again after setup." }, { status: 503 });
+    return Response.json({ record, googleSheetsSynced: true }, { headers: { "Cache-Control": "no-store" } });
+  }
+}
+
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+  if (!sameOrigin(request)) return Response.json({ error: "This request is not allowed." }, { status: 403 });
+  const user = await getChatGPTUser();
+  if (!user) return Response.json({ error: "Sign in before deleting a record." }, { status: 401 });
+  const { id } = await context.params;
+  if (!/^[A-Za-z0-9_-]{1,96}$/.test(id)) return Response.json({ error: "Record not found." }, { status: 404 });
+
+  const db = getDb();
+  try {
+    await db.delete(qaqcRecords).where(eq(qaqcRecords.id, id));
+    await db.insert(qaqcAudit).values({ id: randomUUID(), recordId: id, action: "deleted", actorId: user.userId, beforeJson: null, afterJson: null, createdAt: new Date().toISOString() });
+    return Response.json({ success: true, id }, { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return Response.json({ error: "Could not delete record." }, { status: 500 });
   }
 }

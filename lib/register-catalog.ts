@@ -7,29 +7,33 @@ export type RegisterDefinition = {
 };
 
 export const registerCatalog: RegisterDefinition[] = [
+  // 1. Box 1: Submissions, Quality Governance & Surveillance (7 registers)
+  { name: "MOS - REVISION", category: "Submission", sourceSheets: ["MOS EW", "MOS MBWA M&E", "MOS MBWA"] },
+  { name: "ITP", category: "Submission", sourceSheets: ["ITP"] },
+  { name: "CHECKLIST", category: "Submission", sourceSheets: ["Checklist"] },
+  { name: "OJT", category: "Submission", sourceSheets: ["OJT"] },
+  { name: "FOK LIST", category: "Submission" },
+  { name: "RSS SUMMARY", category: "Submission", sourceSheets: ["RSS Reply"] },
+  { name: "SSR SUMMARY", category: "Submission", sourceSheets: ["RSS Reply"] },
+
+  // 2. Box 2: Site Work Inspections - RFWI (6 registers)
   { name: "RFWI A C&S", category: "Inspection", sourceSheets: ["RFWI BLOCK A C&S"] },
   { name: "RFWI B C&S", category: "Inspection", sourceSheets: ["RFWI BLOCK B"] },
   { name: "RFWI C C&S", category: "Inspection", sourceSheets: ["RFWI BLOCK C"] },
   { name: "RFWI F C&S", category: "Inspection", sourceSheets: ["RFWI BLOCK F"] },
   { name: "RFWI A ARC", category: "Inspection", sourceSheets: ["RFWI BLOCK A ARCH"] },
   { name: "RFWI B ARC", category: "Inspection", sourceSheets: ["RFWI BLOCK B ARCH"] },
-  { name: "MOS - REVISION only", category: "Submission", sourceSheets: ["MOS EW", "MOS MBWA M&E", "MOS MBWA"] },
-  { name: "ITP", category: "Inspection", sourceSheets: ["ITP"] },
-  { name: "CHECKLIST", category: "Inspection", sourceSheets: ["Checklist"] },
+
+  // 3. Box 3: QAQC Testing Records (9 registers)
   { name: "CUBE TEST EW", category: "Test", sourceSheets: ["Cube Test (EW)"] },
   { name: "CUBE TEST BLOCK A", category: "Test", sourceSheets: ["Cube Test (BLOCK A)"] },
   { name: "CUBE TEST BLOCK B", category: "Test", sourceSheets: ["Cube Test (BLOCK B)"] },
   { name: "GROUT TEST BLOCK A", category: "Test" },
   { name: "GROUT TEST BLOCK B", category: "Test" },
-  { name: "RSS SUMMARY", category: "NCR & Observation", sourceSheets: ["RSS Reply"] },
-  { name: "SSR SUMMARY", category: "NCR & Observation", sourceSheets: ["RSS Reply"] },
   { name: "FDT TEST", category: "Test", sourceSheets: ["FDT Test"] },
   { name: "PILE TEST DATE", category: "Test", sourceSheets: ["Pile Record ACC"] },
   { name: "PLATE LOAD BEARING TEST", category: "Test", sourceSheets: ["PlateLoadBearing"] },
   { name: "LAB SUMMARY", category: "Test", sourceSheets: ["LAB"] },
-  { name: "OJT", category: "Inspection", sourceSheets: ["OJT"] },
-  // FOK is treated as First-of-Kind inspection tracking; no source rows were present.
-  { name: "FOK LIST", category: "Inspection" },
 ];
 
 export const registerByName = new Map(registerCatalog.map((register) => [register.name, register]));
@@ -83,7 +87,7 @@ export function buildRegisterSnapshot(records: SnapshotRecord[]) {
   for (const record of records) {
     const sourceSheet = record.sourceSheet.trim();
     if (sourceSheet.startsWith("MOS") && revisedMosAccRefs.has(String(record.accRef ?? "").trim())) {
-      result.push(withRegister(record, "MOS - REVISION only"));
+      result.push(withRegister(record, "MOS - REVISION"));
       continue;
     }
 

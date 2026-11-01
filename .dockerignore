@@ -1,0 +1,12 @@
+node_modules
+.next
+dist
+.git
+.github
+.wrangler
+.npmrc
+*.log
+.DS_Store
+.env.local
+.env*.local
+README.md
