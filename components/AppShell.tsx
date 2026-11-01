@@ -143,6 +143,16 @@ export function AppShell({
 
             <button
               type="button"
+              onClick={() => setGoogleSheetModalOpen(true)}
+              title="Open Google Sheet Live Tracking"
+              aria-label="Open Google Sheet Live Tracking"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-emerald-400 shadow-md shadow-black/20 transition hover:bg-white/15 cursor-pointer"
+            >
+              <FileSpreadsheet className="h-5 w-5" />
+            </button>
+
+            <button
+              type="button"
               className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-slate-100 ring-1 ring-white/10 transition hover:bg-white/15 cursor-pointer"
               aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
               onClick={() => setMobileNavOpen((v) => !v)}
@@ -261,6 +271,17 @@ export function AppShell({
             </button>
 
             <span className="mx-1 h-5 w-px bg-white/15" aria-hidden />
+
+            {/* Google Sheet Live Modal Trigger */}
+            <button
+              type="button"
+              onClick={() => setGoogleSheetModalOpen(true)}
+              title="Open Google Sheet Live Tracking"
+              aria-label="Open Google Sheet Live Tracking"
+              className={iconBtnClass}
+            >
+              <FileSpreadsheet className="h-5 w-5 text-emerald-400 hover:text-emerald-300 transition" />
+            </button>
 
             {/* Overdue / Action Trigger */}
             <button
