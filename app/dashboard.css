@@ -694,8 +694,28 @@
 }
 
 @media (max-width: 1024px) {
+  .edms-dashboard {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    padding-bottom: 16px;
+  }
   .edms-workspace {
     grid-template-columns: 1fr;
+    height: auto;
+    min-height: auto;
+    overflow: visible;
+    gap: 16px;
+  }
+  .edms-calendar-column {
+    height: auto;
+    min-height: 520px;
+    overflow: visible;
+  }
+  .edms-categories {
+    height: auto;
+    min-height: 500px;
+    overflow: visible;
   }
   .edms-category-grid {
     grid-template-columns: 1fr;
@@ -703,15 +723,82 @@
 }
 
 @media (max-width: 640px) {
+  .edms-dashboard {
+    gap: 8px;
+  }
   .edms-kpis {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .edms-kpi {
+    padding: 8px 10px;
+    gap: 8px;
+    min-height: 64px;
+    height: auto;
+    border-radius: 12px;
+    border-top-width: 3px;
+  }
+  .edms-kpi-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+  }
+  .edms-kpi-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .edms-kpi strong {
+    font-size: 1.25rem;
+    line-height: 1.1;
+  }
+  .edms-kpi-label {
+    font-size: 9px;
+    letter-spacing: 0.02em;
+  }
+  .edms-kpi small {
+    display: none;
+  }
+  .edms-chevron {
+    display: none;
+  }
+  .edms-calendar-column {
+    min-height: 440px;
+  }
+  .edms-categories {
+    min-height: 440px;
+  }
+  .edms-category-row {
+    font-size: 11px;
+    grid-template-columns: minmax(0, 2.4fr) repeat(4, minmax(24px, 0.7fr)) 12px;
+    gap: 2px;
+    padding: 2.5px 4px;
+  }
+  .edms-category-heading h2 {
+    font-size: 13px;
   }
   .edms-action-columns,
   .edms-action-row {
-    grid-template-columns: 110px 36px minmax(100px, 1fr) 20px;
+    grid-template-columns: 100px 32px minmax(80px, 1fr) 18px;
+    font-size: 11px;
   }
   .edms-action-row span:nth-child(4) {
     display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .edms-kpis {
+    gap: 5px;
+  }
+  .edms-kpi {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+  .edms-kpi strong {
+    font-size: 1.15rem;
+  }
+  .edms-kpi-label {
+    font-size: 8.5px;
   }
 }
 

@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 
 /** Standard unified modal footprint for all SDSB Main Modals (+10% width: 84rem * 1.1 = 92.4rem) */
 export const STANDARD_MODAL_PANEL_CLASS =
-  "relative z-10 flex h-[min(94vh,54rem)] w-full max-w-[92.4rem] flex-col overflow-hidden rounded-2xl border border-line bg-paper-elevated shadow-2xl shadow-ink/30 max-sm:h-[min(98vh,100%)]";
+  "relative z-10 flex h-[min(94vh,54rem)] w-full max-w-[92.4rem] flex-col overflow-hidden rounded-2xl border border-line bg-paper-elevated shadow-2xl shadow-ink/30 max-sm:h-[100dvh] max-sm:max-h-[100dvh] max-sm:rounded-none max-sm:border-0";
 
 /** Shared shell — same footprint as modals. */
 export const MODAL_SHELL_CLASS = STANDARD_MODAL_PANEL_CLASS;
@@ -18,31 +18,31 @@ export const WIDE_MODAL_SHELL_CLASS = STANDARD_MODAL_PANEL_CLASS;
 
 /** Compact confirm / bucket dialogs. */
 export const COMPACT_MODAL_PANEL_CLASS =
-  "relative z-10 flex w-full max-w-lg max-h-[min(90vh,100%)] flex-col overflow-hidden rounded-2xl border border-line bg-paper-elevated shadow-2xl shadow-ink/20";
+  "relative z-10 flex w-full max-w-lg max-h-[min(90vh,100%)] flex-col overflow-hidden rounded-2xl border border-line bg-paper-elevated shadow-2xl shadow-ink/20 max-sm:max-h-[96dvh] max-sm:rounded-xl";
 
 /** Medium forms (e.g. record entry & update). */
 export const MEDIUM_MODAL_PANEL_CLASS = STANDARD_MODAL_PANEL_CLASS;
 
 export const MODAL_OVERLAY_CLASS =
-  "fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4";
+  "fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 max-sm:p-0";
 
 export const MODAL_ACCENT_CLASS = "h-1 w-full shrink-0 bg-accent";
 
 export const MODAL_HEADER_CLASS =
-  "flex shrink-0 items-start justify-between gap-2 border-b border-line bg-paper/50 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4";
+  "flex shrink-0 items-start justify-between gap-2 border-b border-line bg-paper/50 px-3 py-2.5 sm:gap-3 sm:px-6 sm:py-4";
 
 export const MODAL_TITLE_CLASS =
-  "display text-lg font-semibold uppercase tracking-tight text-ink sm:text-xl";
+  "display text-base font-semibold uppercase tracking-tight text-ink sm:text-xl truncate";
 
-export const MODAL_SUBTITLE_CLASS = "mt-0.5 text-[11px] text-muted sm:text-xs";
+export const MODAL_SUBTITLE_CLASS = "mt-0.5 text-[10px] text-muted sm:text-xs truncate";
 
 export const MODAL_CLOSE_CLASS =
-  "shrink-0 rounded-lg px-2.5 py-1.5 text-sm text-muted hover:bg-paper hover:text-ink transition";
+  "shrink-0 rounded-lg p-2 text-sm text-muted hover:bg-paper hover:text-ink transition cursor-pointer";
 
 export const MODAL_FORM_CLASS = "flex min-h-0 flex-1 flex-col overflow-hidden";
 
 export const MODAL_BODY_CLASS =
-  "min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-6 sm:py-5";
+  "min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 sm:px-6 sm:py-5";
 
 export const MODAL_FOOTER_CLASS =
   "shrink-0 border-t border-line bg-paper/50 px-3 py-2 sm:px-6 sm:py-2.5 flex items-center justify-end gap-2";

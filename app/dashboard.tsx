@@ -960,13 +960,13 @@ export function Dashboard({
             title="22 QAQC Registers"
             description={`Viewing: ${categoryFilter} ${selectedSubcategory !== "ALL" ? `➔ ${selectedSubcategory}` : `(${availableSubcategories.length} Registers)`} (${filteredRegisters.length} rows)`}
             actions={
-              <div className="flex w-full flex-wrap items-center justify-end gap-2">
+              <div className="flex w-full flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-end gap-2">
                 {/* 1. Category Filter Dropdown (Inspection, Submission, Test) */}
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5 w-full sm:w-auto">
                   <span className="text-[11px] font-bold text-muted uppercase tracking-wider hidden md:inline">Category:</span>
                   <select
                     aria-label="Filter Category"
-                    className="form-control h-10 w-44 shrink-0 rounded-lg border border-line bg-field px-2.5 text-xs font-semibold text-ink"
+                    className="form-control h-10 w-full sm:w-44 shrink-0 rounded-lg border border-line bg-field px-2.5 text-xs font-semibold text-ink"
                     value={categoryFilter}
                     onChange={(e) => {
                       const newCat = e.target.value as RegisterCategory;
@@ -984,11 +984,11 @@ export function Dashboard({
                 </div>
 
                 {/* 2. Sub-Register Filter Dropdown (Cascaded by Category) */}
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-1.5 w-full sm:w-auto">
                   <span className="text-[11px] font-bold text-muted uppercase tracking-wider hidden md:inline">Sub:</span>
                   <select
                     aria-label="Select Sub-Register"
-                    className="form-control h-10 w-60 shrink-0 truncate rounded-lg border border-line bg-field px-2.5 text-xs font-semibold text-ink"
+                    className="form-control h-10 w-full sm:w-60 shrink-0 truncate rounded-lg border border-line bg-field px-2.5 text-xs font-semibold text-ink"
                     value={selectedSubcategory}
                     onChange={(e) => {
                       setSelectedSubcategory(e.target.value);
@@ -1011,7 +1011,7 @@ export function Dashboard({
                 {/* 3. Status Filter (Dynamic & Tally with Actual Register Statuses) */}
                 <select
                   aria-label="Filter Status"
-                  className="form-control h-10 w-48 shrink-0 truncate rounded-lg border border-line bg-field px-2.5 text-xs font-semibold text-ink"
+                  className="form-control h-10 w-full sm:w-48 shrink-0 truncate rounded-lg border border-line bg-field px-2.5 text-xs font-semibold text-ink"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
@@ -1043,7 +1043,7 @@ export function Dashboard({
                 </select>
 
                 {/* Search Box */}
-                <div className="relative flex-1 min-w-[180px] max-w-xs">
+                <div className="relative w-full sm:flex-1 sm:min-w-[180px] sm:max-w-xs">
                   <Search className="absolute left-2.5 top-3 h-4 w-4 text-muted" />
                   <input
                     type="text"
@@ -1054,33 +1054,40 @@ export function Dashboard({
                   />
                 </div>
 
-                {/* Export CSV Button */}
-                <button
-                  type="button"
-                  onClick={exportCSV}
-                  className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-line bg-field px-3 text-xs font-semibold text-ink hover:border-accent hover:text-accent cursor-pointer"
-                  title="Export filtered records to CSV"
-                >
-                  <ArrowDownToLine className="h-4 w-4" />
-                  <span>Export</span>
-                </button>
+                {/* Export & Add Record Buttons */}
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <button
+                    type="button"
+                    onClick={exportCSV}
+                    className="inline-flex h-10 flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg border border-line bg-field px-3 text-xs font-semibold text-ink hover:border-accent hover:text-accent cursor-pointer"
+                    title="Export filtered records to CSV"
+                  >
+                    <ArrowDownToLine className="h-4 w-4" />
+                    <span>Export</span>
+                  </button>
 
-                {/* Add Record Button */}
-                <button
-                  type="button"
-                  onClick={openNewRecord}
-                  className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-accent px-3 text-xs font-semibold text-white shadow hover:brightness-110 cursor-pointer"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Record</span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={openNewRecord}
+                    className="inline-flex h-10 flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg bg-accent px-3 text-xs font-semibold text-white shadow hover:brightness-110 cursor-pointer"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Record</span>
+                  </button>
+                </div>
               </div>
             }
           />
 
           {/* Data Table / Spreadsheet View */}
           <div className="overflow-hidden rounded-xl border border-line bg-paper-elevated shadow-sm">
-            <div className="max-h-[calc(100vh-230px)] overflow-auto">
+            <div className="flex md:hidden items-center justify-between px-3 py-1.5 bg-paper/60 border-b border-line text-[11px] text-muted">
+              <span>{filteredRegisters.length} records</span>
+              <span className="font-semibold text-accent flex items-center gap-1">
+                <span>⇄ Swipe horizontally</span>
+              </span>
+            </div>
+            <div className="max-h-[calc(100vh-230px)] max-sm:max-h-[calc(100dvh-280px)] overflow-x-auto overflow-y-auto overscroll-x-contain">
               <table className="w-full min-w-[1420px] text-left text-xs border-collapse table-fixed">
                 <colgroup>
                   <col style={{ width: "48px" }} />

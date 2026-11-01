@@ -58,6 +58,7 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
   }, []);
 
   const [selectedDay, setSelectedDay] = useState<string>(todayIso);
+  const [mobileTab, setMobileTab] = useState<"calendar" | "agenda">("calendar");
 
   const monthLabel = useMemo(() => {
     return currentDate.toLocaleString("en-MY", {
@@ -287,10 +288,41 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
         </span>
       </div>
 
-      {/* 3. Main Workspace Grid: Kalendar Kiri + Daily Agenda Kanan (Fixed Height & Non-shifting) */}
+      {/* Mobile Tab Switcher */}
+      <div className="flex items-center justify-center p-2 border-b border-line bg-paper/50 lg:hidden shrink-0">
+        <div className="inline-flex rounded-lg border border-line bg-field p-0.5 w-full max-w-xs text-xs font-bold shadow-xs">
+          <button
+            type="button"
+            onClick={() => setMobileTab("calendar")}
+            className={`flex-1 py-1 rounded-md transition text-center cursor-pointer ${
+              mobileTab === "calendar" ? "bg-accent text-white shadow-xs" : "text-muted hover:text-ink"
+            }`}
+          >
+            Calendar Grid
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab("agenda")}
+            className={`flex-1 py-1 rounded-md transition text-center cursor-pointer flex items-center justify-center gap-1.5 ${
+              mobileTab === "agenda" ? "bg-accent text-white shadow-xs" : "text-muted hover:text-ink"
+            }`}
+          >
+            <span>Daily Agenda</span>
+            <span className="rounded-full bg-accent/20 px-1.5 py-0.2 text-[10px] text-accent">
+              {dayFilteredRecords.length}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3. Main Workspace Grid: Kalendar Kiri + Daily Agenda Kanan */}
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_330px] flex-1 min-h-0 overflow-hidden">
         {/* Month Calendar Grid */}
-        <div className="p-3 sm:p-4 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-line h-full min-h-0 overflow-hidden">
+        <div
+          className={`p-2 sm:p-4 flex-col justify-between border-b lg:border-b-0 lg:border-r border-line h-full min-h-0 overflow-hidden ${
+            mobileTab === "calendar" ? "flex" : "hidden lg:flex"
+          }`}
+        >
           {/* Weekday headers */}
           <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-muted mb-1.5 uppercase tracking-wider shrink-0">
             {WEEKDAYS.map((w) => (
@@ -325,7 +357,12 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
                 <button
                   key={cell.iso}
                   type="button"
-                  onClick={() => setSelectedDay(cell.iso)}
+                  onClick={() => {
+                    setSelectedDay(cell.iso);
+                    if (typeof window !== "undefined" && window.innerWidth < 1024 && count > 0) {
+                      setMobileTab("agenda");
+                    }
+                  }}
                   className={`group relative flex flex-col justify-between rounded-lg p-1 text-left transition cursor-pointer h-full min-h-0 overflow-hidden ${
                     isSelected
                       ? "border-2 border-accent bg-accent/10 shadow-xs ring-1 ring-accent"
@@ -411,7 +448,11 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
         </div>
 
         {/* Daily Agenda Panel (Right Column inside Calendar Box) */}
-        <div className="flex flex-col bg-paper/30 p-3 sm:p-4 h-full min-h-0 overflow-hidden">
+        <div
+          className={`flex-col bg-paper/30 p-3 sm:p-4 h-full min-h-0 overflow-hidden ${
+            mobileTab === "agenda" ? "flex" : "hidden lg:flex"
+          }`}
+        >
           <div className="flex items-center justify-between border-b border-line/70 pb-2 mb-2 shrink-0">
             <div>
               <span className="text-[10px] font-black uppercase tracking-wider text-muted">

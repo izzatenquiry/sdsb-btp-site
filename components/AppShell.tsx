@@ -118,13 +118,13 @@ export function AppShell({
             </p>
           </button>
 
-          <div className="flex shrink-0 items-center gap-1.5">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
             <button
               type="button"
               onClick={onOpenProfile}
               title={`Profil ${userName} · Document Controller & System Admin`}
               aria-label={`Profil ${userName}`}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-accent/90 text-white font-extrabold text-xs shadow ring-1 ring-white/20 hover:brightness-110 cursor-pointer"
+              className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-accent/90 text-white font-extrabold text-[11px] shadow ring-1 ring-white/20 hover:brightness-110 cursor-pointer"
             >
               {userName.trim().split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ND"}
             </button>
@@ -134,9 +134,9 @@ export function AppShell({
               title="Add New Record"
               aria-label="Add New Record"
               onClick={onOpenNewRecord}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-white shadow-md shadow-black/20 transition hover:brightness-110 cursor-pointer"
+              className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-accent text-white shadow-md shadow-black/20 transition hover:brightness-110 cursor-pointer"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" className="h-5 w-5" aria-hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" className="h-4 w-4" aria-hidden>
                 <path d="M12 5v14M5 12h14" strokeLinecap="round" />
               </svg>
             </button>
@@ -146,14 +146,14 @@ export function AppShell({
               onClick={() => setGoogleSheetModalOpen(true)}
               title="Open Google Sheet Live Tracking"
               aria-label="Open Google Sheet Live Tracking"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-emerald-400 shadow-md shadow-black/20 transition hover:bg-white/15 cursor-pointer"
+              className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-white/10 text-emerald-400 shadow-md shadow-black/20 transition hover:bg-white/15 cursor-pointer"
             >
-              <FileSpreadsheet className="h-5 w-5" />
+              <FileSpreadsheet className="h-4 w-4" />
             </button>
 
             <button
               type="button"
-              className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-slate-100 ring-1 ring-white/10 transition hover:bg-white/15 cursor-pointer"
+              className="relative inline-flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 text-slate-100 ring-1 ring-white/10 transition hover:bg-white/15 cursor-pointer"
               aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
               onClick={() => setMobileNavOpen((v) => !v)}
             >
@@ -492,17 +492,17 @@ export function AppShell({
       </header>
 
       {/* Main View Area */}
-      <main className="flex-1 flex flex-col min-h-0 px-3 pt-2 pb-1 sm:px-5 xl:px-6 overflow-hidden">
+      <main className="flex-1 flex flex-col min-h-0 px-2 pt-2 pb-1 sm:px-5 xl:px-6 overflow-y-auto xl:overflow-hidden">
         {children}
       </main>
 
       {/* Shared Footer */}
-      <footer className="edms-app-footer mt-auto shrink-0 border-t border-line bg-paper/60 px-4 py-1.5 sm:px-6 xl:px-8">
-        <div className="flex flex-col items-center justify-between gap-2 sm:flex-row">
-          <div className="edms-footer-brand flex items-center gap-3 text-left">
+      <footer className="edms-app-footer mt-auto shrink-0 border-t border-line bg-paper/60 px-3 py-1.5 sm:px-6 xl:px-8">
+        <div className="flex flex-col items-center justify-between gap-1.5 sm:flex-row">
+          <div className="edms-footer-brand flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 text-center sm:text-left">
             <div>
-              <span>SDSB · BANTING TECHNOLOGY PARK (BTP) QAQC</span>
-              <small>INTERNAL REGISTER CONTROL CENTRE · 22 REGISTER SNAPSHOT</small>
+              <span className="text-[11px] sm:text-xs">SDSB · BANTING TECHNOLOGY PARK (BTP) QAQC</span>
+              <small className="hidden sm:block">INTERNAL REGISTER CONTROL CENTRE · 22 REGISTER SNAPSHOT</small>
             </div>
             <button
               type="button"
