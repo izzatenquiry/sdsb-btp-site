@@ -272,36 +272,36 @@ export function RfwiSheet({
               </td>
             </tr>
             <tr className="border-b border-black">
-              <td className="py-1 px-2" colSpan={4}>
-                <div className="font-bold text-[10px] text-slate-700 mb-0.5">Inspection Comments / Required Action:</div>
-                <div className="min-h-10 border border-slate-300 p-1.5 text-xs bg-white rounded">
+              <td className="py-0.5 px-2" colSpan={4}>
+                <div className="font-bold text-[9.5px] text-slate-700 mb-0.5">Inspection Comments / Required Action:</div>
+                <div className="min-h-8 border border-slate-300 p-1 text-[11px] bg-white rounded">
                   {formData.inspectionComments || ""}
                 </div>
               </td>
             </tr>
             <tr>
               <td className="w-1/2 border-r-2 border-black p-1.5 align-top" colSpan={2}>
-                <div className="font-bold text-[10px] uppercase text-slate-600 border-b border-black pb-0.5 mb-1.5">
+                <div className="font-bold text-[9.5px] uppercase text-slate-600 border-b border-black pb-0.5 mb-1">
                   Consultant (RE / RA) — Inspected & Recommended
                 </div>
-                <div className="space-y-1 text-xs">
+                <div className="space-y-0.5 text-[11px]">
                   <div><strong>Name:</strong> ___________________________________</div>
                   <div><strong>Position:</strong> Resident Engineer / Inspector (C&S)</div>
                   <div><strong>Company:</strong> Supervising Consultant</div>
-                  <div className="mt-2.5 pt-1.5 border-t border-dashed border-slate-400">
+                  <div className="mt-1.5 pt-1 border-t border-dashed border-slate-400">
                     <strong>Signature & Date:</strong> ____________________________
                   </div>
                 </div>
               </td>
               <td className="w-1/2 p-1.5 align-top" colSpan={2}>
-                <div className="font-bold text-[10px] uppercase text-slate-600 border-b border-black pb-0.5 mb-1.5">
+                <div className="font-bold text-[9.5px] uppercase text-slate-600 border-b border-black pb-0.5 mb-1">
                   PMC / DayOne — Witnessed, Acknowledged & Approved
                 </div>
-                <div className="space-y-1 text-xs">
+                <div className="space-y-0.5 text-[11px]">
                   <div><strong>Name:</strong> ___________________________________</div>
                   <div><strong>Position:</strong> PMC Quality Director / Lead</div>
                   <div><strong>Company:</strong> PMC / DayOne</div>
-                  <div className="mt-2.5 pt-1.5 border-t border-dashed border-slate-400">
+                  <div className="mt-1.5 pt-1 border-t border-dashed border-slate-400">
                     <strong>Signature & Date:</strong> ____________________________
                   </div>
                 </div>

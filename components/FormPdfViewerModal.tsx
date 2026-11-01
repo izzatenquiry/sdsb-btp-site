@@ -190,7 +190,36 @@ export function FormPdfViewerModal({
         allowTaint: true,
         logging: false,
         backgroundColor: "#ffffff",
-        windowWidth: 1200,
+        windowWidth: 1000,
+        windowHeight: 2500,
+        scrollX: 0,
+        scrollY: 0,
+        onclone: (clonedDoc, clonedEl) => {
+          const targetEl = (clonedEl || clonedDoc.getElementById("printable-form-sheet")) as HTMLElement | null;
+          if (targetEl) {
+            clonedDoc.body.style.margin = "0";
+            clonedDoc.body.style.padding = "0";
+            clonedDoc.body.style.background = "#ffffff";
+            clonedDoc.body.style.overflow = "visible";
+            clonedDoc.body.style.height = "auto";
+            clonedDoc.body.style.minHeight = "auto";
+
+            targetEl.style.position = "static";
+            targetEl.style.margin = "0 auto";
+            targetEl.style.padding = "8px";
+            targetEl.style.boxSizing = "border-box";
+            targetEl.style.width = "820px";
+            targetEl.style.maxWidth = "820px";
+            targetEl.style.height = "auto";
+            targetEl.style.maxHeight = "none";
+            targetEl.style.overflow = "visible";
+            targetEl.style.boxShadow = "none";
+            targetEl.style.border = "none";
+
+            clonedDoc.body.innerHTML = "";
+            clonedDoc.body.appendChild(targetEl);
+          }
+        },
       });
 
       const imgData = canvas.toDataURL("image/png");
@@ -203,14 +232,14 @@ export function FormPdfViewerModal({
 
       const pageWidth = 210;
       const pageHeight = 297;
-      const marginX = 6;
-      const marginY = 6;
-      const printableW = pageWidth - marginX * 2; // 198mm
-      const printableH = pageHeight - marginY * 2; // 285mm
+      const marginX = 4;
+      const marginY = 4;
+      const printableW = pageWidth - marginX * 2; // 202mm
+      const printableH = pageHeight - marginY * 2; // 289mm
 
       const canvasAspect = canvas.height / canvas.width;
 
-      if (canvasAspect <= 1.6) {
+      if (canvasAspect <= 1.55) {
         const scale = Math.min(printableW / canvas.width, printableH / canvas.height);
         const finalW = canvas.width * scale;
         const finalH = canvas.height * scale;
@@ -256,7 +285,8 @@ export function FormPdfViewerModal({
 
       const filename = `${template.code}_${formData.refNo || "Form"}.pdf`
         .replace(/[/\\?%*:|"<>]/g, "-")
-        .replace(/\s+/g, "_");
+        .replace(/\s+/g, "_")
+        .trim();
       pdf.save(filename);
     } catch (err) {
       console.error("PDF generation failed:", err);
@@ -441,7 +471,7 @@ export function FormPdfViewerModal({
         @media print {
           @page {
             size: A4 portrait;
-            margin: 2mm 5mm 2mm 5mm !important;
+            margin: 3mm 5mm 3mm 5mm !important;
           }
           html, body {
             margin: 0 !important;
@@ -468,6 +498,7 @@ export function FormPdfViewerModal({
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
+            zoom: 0.90 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
