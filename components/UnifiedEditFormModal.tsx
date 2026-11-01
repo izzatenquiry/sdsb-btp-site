@@ -41,12 +41,13 @@ import {
   Trash2,
   FileCheck2,
 } from "lucide-react";
-import { ScancopyViewerModal } from "./ScancopyViewerModal";
 import {
   getScancopyMetaSync,
+  getScancopyDocument,
   saveScancopyDocument,
   deleteScancopyDocument,
   type ScancopyMeta,
+  type ScancopyRecord,
 } from "@/lib/scancopy-storage";
 
 // Import all official form sheet components
@@ -104,6 +105,11 @@ export function UnifiedEditFormModal({
   const [scancopyViewerOpen, setScancopyViewerOpen] = useState(false);
   const [scancopyUploading, setScancopyUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Preview Mode: "form" for live A4 sheet, "scancopy" for closed signed PDF document preview inside this modal
+  const [previewMode, setPreviewMode] = useState<"form" | "scancopy">("form");
+  const [scancopyDoc, setScancopyDoc] = useState<ScancopyRecord | null>(null);
+  const [loadingScancopyDoc, setLoadingScancopyDoc] = useState(false);
 
   // Form edit fields
   const [form, setForm] = useState<FormValue>(blankForm());
@@ -321,6 +327,32 @@ export function UnifiedEditFormModal({
     }
   }, [form.refNo, open]);
 
+  // Load full scancopy doc for inline right-pane preview
+  useEffect(() => {
+    let cancelled = false;
+    async function loadScancopy() {
+      if (!form.refNo) {
+        setScancopyDoc(null);
+        return;
+      }
+      setLoadingScancopyDoc(true);
+      try {
+        const doc = await getScancopyDocument(form.refNo);
+        if (!cancelled) setScancopyDoc(doc);
+      } catch (err) {
+        console.error("Failed to load scancopy document", err);
+      } finally {
+        if (!cancelled) setLoadingScancopyDoc(false);
+      }
+    }
+    if (open && (previewMode === "scancopy" || scancopyMeta)) {
+      void loadScancopy();
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [form.refNo, previewMode, scancopyMeta, open]);
+
   async function handleScancopyFileSelected(file: File) {
     if (!form.refNo) {
       alert("Please provide the Internal Ref No before uploading a scancopy.");
@@ -342,6 +374,9 @@ export function UnifiedEditFormModal({
           dataUrl,
         });
         setScancopyMeta(getScancopyMetaSync(form.refNo));
+        const doc = await getScancopyDocument(form.refNo);
+        setScancopyDoc(doc);
+        setPreviewMode("scancopy"); // Switch right pane directly to preview the new scancopy!
         setScancopyUploading(false);
       };
       reader.readAsDataURL(file);
@@ -356,6 +391,8 @@ export function UnifiedEditFormModal({
     if (confirm(`Remove attached scancopy for ${form.refNo}?`)) {
       await deleteScancopyDocument(form.refNo);
       setScancopyMeta(null);
+      setScancopyDoc(null);
+      setPreviewMode("form");
     }
   }
 
@@ -466,13 +503,28 @@ export function UnifiedEditFormModal({
     setForm((prev) => ({ ...prev, dueDate: d.toISOString().slice(0, 10) }));
   }
 
-  // Print Form
+  // Print Form or Scancopy
   function handlePrint() {
+    if (previewMode === "scancopy" && scancopyDoc?.dataUrl) {
+      const win = window.open(scancopyDoc.dataUrl, "_blank");
+      win?.focus();
+      win?.print();
+      return;
+    }
     window.print();
   }
 
   // Download PDF
   async function handleDownloadPdf() {
+    if (previewMode === "scancopy" && scancopyDoc?.dataUrl) {
+      const a = document.createElement("a");
+      a.href = scancopyDoc.dataUrl;
+      a.download = scancopyDoc.fileName || `${form.refNo || "Scancopy"}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return;
+    }
     if (!printAreaRef.current || !currentTemplate) return;
     setDownloading(true);
     try {
@@ -620,8 +672,29 @@ export function UnifiedEditFormModal({
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
+            onClick={() => setPreviewMode((prev) => (prev === "scancopy" ? "form" : "scancopy"))}
+            title={scancopyMeta ? "View signed scancopy PDF in preview pane" : "Attach and preview scancopy in preview pane"}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer shadow-xs ${
+              previewMode === "scancopy"
+                ? "bg-rose-600 text-white border-rose-600 shadow-rose-600/30"
+                : scancopyMeta
+                ? "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-600 hover:text-white"
+                : "border-line bg-paper text-muted hover:border-accent hover:text-accent"
+            }`}
+          >
+            <FileCheck2 className="h-3.5 w-3.5 text-rose-400" />
+            <span>{previewMode === "scancopy" ? "Live Form Sheet" : "Preview Scancopy"}</span>
+            {scancopyMeta && (
+              <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${previewMode === "scancopy" ? "bg-white text-rose-700" : "bg-rose-500 text-white"}`}>
+                PDF
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
             onClick={handlePrint}
-            title="Print A4 Form directly"
+            title="Print directly"
             className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-paper px-2.5 py-1.5 text-xs font-semibold text-ink hover:border-accent hover:bg-field transition cursor-pointer"
           >
             <Printer className="h-3.5 w-3.5 text-accent" />
@@ -962,11 +1035,11 @@ export function UnifiedEditFormModal({
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
-                        onClick={() => setScancopyViewerOpen(true)}
-                        className="inline-flex items-center gap-1 rounded-md bg-accent/10 border border-accent/30 text-accent px-2 py-1 text-[11px] font-semibold hover:bg-accent hover:text-white transition cursor-pointer"
+                        onClick={() => setPreviewMode("scancopy")}
+                        className="inline-flex items-center gap-1 rounded-md bg-rose-600 border border-rose-600 text-white px-2.5 py-1 text-[11px] font-semibold hover:bg-rose-500 transition cursor-pointer shadow-xs"
                       >
                         <Eye className="h-3 w-3" />
-                        Preview
+                        Preview In Pane
                       </button>
                       <button
                         type="button"
@@ -1039,90 +1112,247 @@ export function UnifiedEditFormModal({
           </form>
         </div>
 
-        {/* ================= RIGHT PANE: LIVE PREVIEW FORM ================= */}
+        {/* ================= RIGHT PANE: LIVE PREVIEW FORM & SCANCOPY ================= */}
         <div className="flex-1 min-h-0 bg-slate-100 dark:bg-slate-950/80 flex flex-col overflow-hidden">
           
           {/* Top Preview Toolbar */}
           <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 border-b border-line bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs px-4 py-2 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Eye className="h-3.5 w-3.5 text-accent" />
-                Form Sheet:
-              </span>
-              <select
-                className="rounded-md border border-line bg-field px-2 py-1 text-xs font-semibold text-ink"
-                value={selectedTemplateId}
-                onChange={(e) => setSelectedTemplateId(e.target.value)}
-              >
-                {GOVERNANCE_FORMS.map((tmpl) => (
-                  <option key={tmpl.id} value={tmpl.id}>
-                    {tmpl.title} ({tmpl.fileFormat.toUpperCase()})
-                  </option>
-                ))}
-              </select>
+            
+            {/* Left: Mode Tabs & Template Selector */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Tab Selector */}
+              <div className="inline-flex items-center gap-1 p-0.5 rounded-lg bg-slate-200/80 dark:bg-slate-800 border border-line">
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode("form")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${
+                    previewMode === "form"
+                      ? "bg-white dark:bg-slate-700 text-accent shadow-xs"
+                      : "text-muted hover:text-ink"
+                  }`}
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  <span>1. Live Form Sheet</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode("scancopy")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${
+                    previewMode === "scancopy"
+                      ? "bg-rose-600 text-white shadow-xs"
+                      : "text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
+                  }`}
+                >
+                  <FileCheck2 className="h-3.5 w-3.5" />
+                  <span>2. Signed Scancopy (PDF)</span>
+                  {scancopyMeta ? (
+                    <span className="rounded-full bg-emerald-500 text-white text-[9px] px-1.5 py-0.2 font-bold">
+                      Attached
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-300 text-[9px] px-1.5 py-0.2">
+                      Upload
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              {previewMode === "form" && (
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300 text-xs hidden sm:inline">
+                    Sheet:
+                  </span>
+                  <select
+                    className="rounded-md border border-line bg-field px-2 py-1 text-xs font-semibold text-ink max-w-[200px] truncate"
+                    value={selectedTemplateId}
+                    onChange={(e) => setSelectedTemplateId(e.target.value)}
+                  >
+                    {GOVERNANCE_FORMS.map((tmpl) => (
+                      <option key={tmpl.id} value={tmpl.id}>
+                        {tmpl.title} ({tmpl.fileFormat.toUpperCase()})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
 
+            {/* Right: Status indicator */}
             <div className="flex items-center gap-3 text-[11px] text-muted font-medium">
-              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                Live Synced Preview
-              </span>
-              <span className="hidden sm:inline text-slate-400">|</span>
-              <span className="hidden sm:inline">A4 Portrait (210 × 297 mm)</span>
+              {previewMode === "form" ? (
+                <>
+                  <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Live Synced Preview
+                  </span>
+                  <span className="hidden sm:inline text-slate-400">|</span>
+                  <span className="hidden sm:inline">A4 Portrait (210 × 297 mm)</span>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  {scancopyMeta ? (
+                    <>
+                      <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-semibold">
+                        <FileCheck2 className="h-3.5 w-3.5" />
+                        Signed Evidence Attached
+                      </span>
+                      <span className="text-slate-400">|</span>
+                      <span>{(scancopyMeta.fileSize / 1024).toFixed(1)} KB</span>
+                    </>
+                  ) : (
+                    <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                      No Scancopy Attached Yet
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Scrollable Preview Canvas */}
+          {/* Preview Canvas: Either A4 Sheet OR Scancopy PDF */}
           <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 lg:p-8 flex justify-center bg-slate-100 dark:bg-slate-950/70">
-            <div
-              id="printable-form-sheet"
-              ref={printAreaRef}
-              className="w-full max-w-[820px] bg-white text-slate-900 shadow-2xl rounded-sm p-6 sm:p-8 border border-slate-300 dark:border-slate-800 transition-all font-sans leading-normal self-start"
-              style={{ minHeight: "1050px" }}
-            >
-              {selectedTemplateId === "rfwi" && (
-                <RfwiSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "maf" && (
-                <MafSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "ncr" && (
-                <NcrSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "chk" && (
-                <ChkSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "itp" && (
-                <ItpSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "attendance" && (
-                <AttendanceSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "mom" && (
-                <MomSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "mos" && (
-                <MosSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "dls" && (
-                <DlsSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "ra" && (
-                <RaSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "pil" && (
-                <PilSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "pqp-gc" && (
-                <PqpGcSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "pqp-pmc" && (
-                <PqpPmcSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-              {selectedTemplateId === "registers-pack" && (
-                <RegistersPackSheet formData={liveFormData} setFormData={setSheetFields} />
-              )}
-            </div>
+            {previewMode === "form" ? (
+              <div
+                id="printable-form-sheet"
+                ref={printAreaRef}
+                className="w-full max-w-[820px] bg-white text-slate-900 shadow-2xl rounded-sm p-6 sm:p-8 border border-slate-300 dark:border-slate-800 transition-all font-sans leading-normal self-start"
+                style={{ minHeight: "1050px" }}
+              >
+                {selectedTemplateId === "rfwi" && (
+                  <RfwiSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "maf" && (
+                  <MafSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "ncr" && (
+                  <NcrSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "chk" && (
+                  <ChkSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "itp" && (
+                  <ItpSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "attendance" && (
+                  <AttendanceSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "mom" && (
+                  <MomSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "mos" && (
+                  <MosSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "dls" && (
+                  <DlsSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "ra" && (
+                  <RaSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "pil" && (
+                  <PilSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "pqp-gc" && (
+                  <PqpGcSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "pqp-pmc" && (
+                  <PqpPmcSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+                {selectedTemplateId === "registers-pack" && (
+                  <RegistersPackSheet formData={liveFormData} setFormData={setSheetFields} />
+                )}
+              </div>
+            ) : (
+              /* Scancopy Mode */
+              <div className="w-full max-w-[950px] flex flex-col bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-line overflow-hidden self-stretch" style={{ minHeight: "750px" }}>
+                {loadingScancopyDoc ? (
+                  <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-muted">
+                    <div className="h-8 w-8 animate-spin rounded-full border-3 border-accent border-t-transparent mb-3" />
+                    <p className="text-sm font-semibold text-ink">Loading signed scancopy document...</p>
+                    <p className="text-xs text-muted">Retrieving PDF from local storage</p>
+                  </div>
+                ) : scancopyDoc?.dataUrl ? (
+                  <div className="flex-1 flex flex-col min-h-0">
+                    {/* Top Scancopy Action Bar */}
+                    <div className="shrink-0 bg-slate-800 text-white px-4 py-2.5 text-xs flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileCheck2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                        <span className="font-bold truncate">{scancopyDoc.fileName}</span>
+                        <span className="text-[10px] text-slate-300">
+                          ({(scancopyDoc.fileSize / 1024).toFixed(1)} KB)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <a
+                          href={scancopyDoc.dataUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 rounded bg-slate-700 hover:bg-slate-600 px-2.5 py-1 text-[11px] font-semibold text-white transition"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span>New Tab</span>
+                        </a>
+                        <a
+                          href={scancopyDoc.dataUrl}
+                          download={scancopyDoc.fileName}
+                          className="inline-flex items-center gap-1 rounded bg-rose-600 hover:bg-rose-500 px-2.5 py-1 text-[11px] font-semibold text-white transition shadow-xs"
+                        >
+                          <Download className="h-3 w-3" />
+                          <span>Download PDF</span>
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="inline-flex items-center gap-1 rounded bg-slate-700 hover:bg-slate-600 px-2.5 py-1 text-[11px] font-semibold text-white transition cursor-pointer"
+                        >
+                          <Upload className="h-3 w-3" />
+                          <span>Replace</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* PDF / Image Document Viewer */}
+                    <div className="flex-1 min-h-[700px] w-full bg-slate-200 dark:bg-slate-950 p-2 flex">
+                      {scancopyDoc.fileType?.includes("image") ? (
+                        <div className="w-full flex justify-center items-center overflow-auto p-4">
+                          <img
+                            src={scancopyDoc.dataUrl}
+                            alt="Signed Scancopy"
+                            className="max-w-full max-h-[85vh] object-contain rounded border shadow-lg"
+                          />
+                        </div>
+                      ) : (
+                        <iframe
+                          src={scancopyDoc.dataUrl}
+                          className="w-full h-full min-h-[700px] rounded border border-line bg-white"
+                          title={`Signed Scancopy - ${form.refNo}`}
+                        />
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* Empty state: Upload prompt right inside preview */
+                  <div className="flex-1 flex flex-col items-center justify-center p-8 sm:p-12 text-center bg-slate-50 dark:bg-slate-950/60">
+                    <div className="w-16 h-16 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-4 text-rose-600 dark:text-rose-400">
+                      <Upload className="h-8 w-8" />
+                    </div>
+                    <h3 className="text-base font-bold text-ink mb-1">
+                      No Scancopy Attached for {form.refNo || "This Record"}
+                    </h3>
+                    <p className="text-xs text-muted mb-6 max-w-md">
+                      Upload the officially signed & stamped inspection sign-off PDF or completion certificate to preview it directly inside this pane.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="inline-flex items-center gap-2 rounded-xl bg-rose-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-rose-500 transition cursor-pointer"
+                    >
+                      <Upload className="h-4 w-4" />
+                      <span>{scancopyUploading ? "Uploading Scancopy..." : "Upload Scancopy PDF Now"}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
