@@ -316,18 +316,23 @@ export function HomePage({ onLoginSuccess }: Props) {
           />
 
           {/* Mobile Header (visible only on small screens) */}
-          <div className="relative z-10 mx-auto mb-6 w-full max-w-[440px] lg:hidden">
+          <div className="relative z-10 mx-auto mb-6 w-full max-w-[440px] flex flex-col items-center text-center lg:hidden">
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-3 py-1 text-[10px] font-bold text-teal-300">
               <span className="h-1.5 w-1.5 rounded-full bg-teal-400 animate-pulse" />
               <span>BTP QAQC Control Centre</span>
             </div>
-            <h1 className="mt-3 text-2xl font-extrabold text-white sm:text-3xl">
-              SDSB · BANTING TECHNOLOGY PARK
+            <h1 className="mt-3 text-center font-extrabold text-white leading-tight">
+              <span className="block text-2xl sm:text-3xl">SDSB</span>
+              <span className="block text-xl sm:text-2xl mt-0.5 tracking-tight text-white">
+                BANTING TECHNOLOGY PARK
+              </span>
             </h1>
-            <p className="mt-2 text-xs leading-relaxed text-slate-300">
+            <p className="mt-2 text-center text-xs leading-relaxed text-slate-300 max-w-sm">
               Quality Assurance & Control Centre for 22 project registers and governance forms.
             </p>
-            <FeatureGrid compact />
+            <div className="w-full text-left">
+              <FeatureGrid compact />
+            </div>
           </div>
 
           {/* Main CTA Button: Enter QAQC Control Centre */}
