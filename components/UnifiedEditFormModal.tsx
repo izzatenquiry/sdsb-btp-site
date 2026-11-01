@@ -628,6 +628,60 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         onclone: (clonedDoc, clonedEl) => {
           const targetEl = (clonedEl || clonedDoc.getElementById("printable-form-sheet")) as HTMLElement | null;
           if (targetEl) {
+            // Strip any oklch color references that break html2canvas
+            const style = clonedDoc.createElement("style");
+            style.innerHTML = `
+              #printable-form-sheet, #printable-form-sheet * {
+                color-scheme: light !important;
+                box-sizing: border-box !important;
+              }
+              .bg-slate-200 { background-color: #e2e8f0 !important; }
+              .bg-slate-100 { background-color: #f1f5f9 !important; }
+              .bg-slate-50  { background-color: #f8fafc !important; }
+              .bg-white     { background-color: #ffffff !important; }
+              .text-slate-950 { color: #020617 !important; }
+              .text-slate-900 { color: #0f172a !important; }
+              .text-slate-800 { color: #1e293b !important; }
+              .text-slate-700 { color: #334155 !important; }
+              .text-slate-600 { color: #475569 !important; }
+              .text-slate-500 { color: #64748b !important; }
+              .text-slate-400 { color: #94a3b8 !important; }
+              .text-blue-950  { color: #172554 !important; }
+              .border-slate-300 { border-color: #cbd5e1 !important; }
+              .border-slate-400 { border-color: #94a3b8 !important; }
+              .border-black   { border-color: #000000 !important; }
+            `;
+            clonedDoc.head.appendChild(style);
+
+            // Convert any computed oklch colors across elements to rgb
+            try {
+              const allEls = targetEl.querySelectorAll("*");
+              const tempCanvas = clonedDoc.createElement("canvas");
+              const tempCtx = tempCanvas.getContext("2d");
+              if (tempCtx) {
+                allEls.forEach((el) => {
+                  const htmlEl = el as HTMLElement;
+                  const cs = clonedDoc.defaultView?.getComputedStyle(htmlEl);
+                  if (cs) {
+                    if (cs.color && cs.color.includes("oklch")) {
+                      tempCtx.fillStyle = cs.color;
+                      htmlEl.style.color = tempCtx.fillStyle;
+                    }
+                    if (cs.backgroundColor && cs.backgroundColor.includes("oklch")) {
+                      tempCtx.fillStyle = cs.backgroundColor;
+                      htmlEl.style.backgroundColor = tempCtx.fillStyle;
+                    }
+                    if (cs.borderColor && cs.borderColor.includes("oklch")) {
+                      tempCtx.fillStyle = cs.borderColor;
+                      htmlEl.style.borderColor = tempCtx.fillStyle;
+                    }
+                  }
+                });
+              }
+            } catch (e) {
+              console.warn("Color sanitize warning:", e);
+            }
+
             clonedDoc.body.style.margin = "0";
             clonedDoc.body.style.padding = "0";
             clonedDoc.body.style.background = "#ffffff";
@@ -1528,38 +1582,61 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
       {/* Print styles injection */}
       <style>{`
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 0mm !important;
+          }
           html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
             overflow: visible !important;
-            height: auto !important;
             background: #ffffff !important;
+            color: #000000 !important;
           }
           body * {
             visibility: hidden !important;
+          }
+          div[role="dialog"],
+          .fixed,
+          .relative,
+          .flex {
+            position: static !important;
+            display: block !important;
+            transform: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
+            box-shadow: none !important;
+            background: transparent !important;
           }
           #printable-form-sheet,
           #printable-form-sheet * {
             visibility: visible !important;
           }
           #printable-form-sheet {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
+            position: fixed !important;
+            top: 4mm !important;
+            left: 4mm !important;
+            right: 4mm !important;
+            width: calc(100% - 8mm) !important;
+            max-width: calc(100% - 8mm) !important;
             padding: 0 !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            zoom: 0.90 !important;
+            background: #ffffff !important;
+            zoom: 0.94 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
           .no-print {
             display: none !important;
-          }
-          @page {
-            size: A4 portrait;
-            margin: 3mm 5mm 3mm 5mm !important;
           }
         }
       `}</style>
