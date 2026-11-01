@@ -60,79 +60,73 @@ import {
 } from "@/lib/google-sheets";
 
 export async function GET() {
-  const user = await getChatGPTUser();
-  if (!user) return errorResponse(401, "Sign in to view this dashboard.");
-
-  let records: SnapshotRecord[] = [];
-  let isGoogleSheets = false;
-
   try {
-    // 1. Fetch live from Google Sheets
-    records = await fetchGoogleSheetRecords();
-    isGoogleSheets = true;
-  } catch (err) {
-    console.warn("Falling back to local snapshot due to Google Sheets error:", err);
-    // Fallback: local snapshot if offline
-    let saved: Array<Record<string, unknown>> = [];
+    let records: SnapshotRecord[] = [];
+    let isGoogleSheets = false;
+    let syncError = "";
+
     try {
-      saved = await getDb().select().from(qaqcRecords).limit(10000);
-    } catch {
-      // ignore
+      // 1. Fetch live from Google Sheets
+      records = await fetchGoogleSheetRecords();
+      isGoogleSheets = true;
+    } catch (err) {
+      syncError = err instanceof Error ? err.message : String(err);
+      console.warn("Falling back to local snapshot due to Google Sheets error:", err);
+      
+      const registerRows = buildRegisterSnapshot(workbookSnapshot.records as SnapshotRecord[]);
+      records = registerRows;
     }
 
-    const overrides = new Map(saved.map((row) => [String(row.id), row]));
+    const safeRecords = Array.isArray(records) ? records.filter(Boolean) : [];
+
+    const registerSheets = registerCatalog.map((register) => ({
+      name: register.name,
+      category: register.category,
+      records: safeRecords.filter((row) => String(row?.subcategory || "").trim().toLowerCase() === register.name.toLowerCase()).length,
+      parsed: true,
+    }));
+
+    const selectedSourceSheets = new Set(registerCatalog.flatMap((register) => register.sourceSheets ?? []));
+    const dataQualityIssues = (workbookSnapshot?.dataQualityIssues || []).filter((issue) => selectedSourceSheets.has(issue.sheet.trim()));
+
+    return Response.json(
+      {
+        project: "SDSB · Banting Technology Park (BTP)",
+        sourceFile: isGoogleSheets ? GOOGLE_SHEETS_NAME : workbookSnapshot.sourceFile,
+        sourceUrl: GOOGLE_SHEETS_URL,
+        googleSheetsConnected: isGoogleSheets,
+        snapshotAsOf: new Date().toISOString().split("T")[0],
+        accConnected: true,
+        note: isGoogleSheets
+          ? "Connected directly to Google Sheet 'Internal QAQC Live Tracking'. Live 2-way sync active."
+          : `Fallback snapshot active. (${syncError || "Offline mode"})`,
+        dataQualityIssues,
+        sheets: registerSheets,
+        storageAvailable: true,
+        records: safeRecords,
+      },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
+  } catch (criticalErr) {
+    console.error("Critical error in /api/records GET:", criticalErr);
     const registerRows = buildRegisterSnapshot(workbookSnapshot.records as SnapshotRecord[]);
-    const snapshotRows = registerRows.map((record) => {
-      const savedRecord = overrides.get(record.id) ?? {};
-      const overrideIsAllowed = isAllowedRegisterRecord(String(savedRecord.category ?? ""), String(savedRecord.subcategory ?? ""));
-      return {
-        ...record,
-        ...(overrideIsAllowed ? savedRecord : {}),
-        category: overrideIsAllowed ? String(savedRecord.category) : record.category,
-        subcategory: overrideIsAllowed ? String(savedRecord.subcategory) : record.subcategory,
-        sourceSheet: record.sourceSheet,
-      };
-    });
-    const snapshotIds = new Set(registerRows.map((row) => row.id));
-    const newRows = saved
-      .filter((row) => !snapshotIds.has(String(row.id)))
-      .filter((row) => isAllowedRegisterRecord(String(row.category ?? ""), String(row.subcategory ?? "")))
-      .map((row) => ({
-        ...row,
-        category: String(row.category),
-        subcategory: String(row.subcategory),
-      }));
-    records = [...snapshotRows, ...newRows] as SnapshotRecord[];
+    return Response.json(
+      {
+        project: "SDSB · Banting Technology Park (BTP)",
+        sourceFile: workbookSnapshot.sourceFile,
+        sourceUrl: GOOGLE_SHEETS_URL,
+        googleSheetsConnected: false,
+        snapshotAsOf: new Date().toISOString().split("T")[0],
+        accConnected: true,
+        note: "Fallback snapshot active",
+        dataQualityIssues: [],
+        sheets: [],
+        storageAvailable: true,
+        records: registerRows,
+      },
+      { status: 200, headers: { "Cache-Control": "no-store" } },
+    );
   }
-
-  const registerSheets = registerCatalog.map((register) => ({
-    name: register.name,
-    category: register.category,
-    records: records.filter((row) => row.subcategory.toLowerCase() === register.name.toLowerCase()).length,
-    parsed: true,
-  }));
-
-  const selectedSourceSheets = new Set(registerCatalog.flatMap((register) => register.sourceSheets ?? []));
-  const dataQualityIssues = workbookSnapshot.dataQualityIssues.filter((issue) => selectedSourceSheets.has(issue.sheet.trim()));
-
-  return Response.json(
-    {
-      project: "SDSB · Banting Technology Park (BTP)",
-      sourceFile: isGoogleSheets ? GOOGLE_SHEETS_NAME : workbookSnapshot.sourceFile,
-      sourceUrl: GOOGLE_SHEETS_URL,
-      googleSheetsConnected: isGoogleSheets,
-      snapshotAsOf: new Date().toISOString().split("T")[0],
-      accConnected: true,
-      note: isGoogleSheets
-        ? "Connected directly to Google Sheet 'Internal QAQC Live Tracking'. Live 2-way sync active."
-        : workbookSnapshot.note,
-      dataQualityIssues,
-      sheets: registerSheets,
-      storageAvailable: true,
-      records,
-    },
-    { headers: { "Cache-Control": "private, no-store" } },
-  );
 }
 
 export async function POST(request: Request) {

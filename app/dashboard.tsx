@@ -271,8 +271,11 @@ export function Dashboard({
     if (!quiet) setLoading(true);
     try {
       const res = await fetch("/api/records", { cache: "no-store" });
-      const payload = (await res.json()) as { error?: string } & DashboardData;
-      if (!res.ok) throw new Error(payload.error || "Failed to load registers.");
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || `Server returned status ${res.status}`);
+      }
+      const payload = (await res.json()) as DashboardData;
       setData(payload);
       setError("");
       setLastUpdated(new Date());

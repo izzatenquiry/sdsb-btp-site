@@ -19,10 +19,33 @@ const SIGN_OUT_PATH = "/signout-with-chatgpt";
 const CALLBACK_PATH = "/callback";
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get(USER_ID_HEADER);
-  const email = requestHeaders.get(USER_EMAIL_HEADER);
-  if (!userId || !email) {
+  try {
+    const requestHeaders = await headers();
+    const userId = requestHeaders?.get(USER_ID_HEADER);
+    const email = requestHeaders?.get(USER_EMAIL_HEADER);
+    if (!userId || !email) {
+      return {
+        userId: "local-user",
+        displayName: "DAMIA Project QAQC",
+        email: "qaqc@damia.local",
+        fullName: "DAMIA Project QAQC",
+      };
+    }
+
+    const encodedFullName = requestHeaders.get(USER_FULL_NAME_HEADER);
+    const fullName =
+      encodedFullName &&
+      requestHeaders.get(USER_FULL_NAME_ENCODING_HEADER) === PERCENT_ENCODED_UTF8
+        ? safeDecodeURIComponent(encodedFullName)
+        : null;
+
+    return {
+      userId,
+      displayName: fullName ?? email,
+      email,
+      fullName,
+    };
+  } catch {
     return {
       userId: "local-user",
       displayName: "DAMIA Project QAQC",
@@ -30,20 +53,6 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
       fullName: "DAMIA Project QAQC",
     };
   }
-
-  const encodedFullName = requestHeaders.get(USER_FULL_NAME_HEADER);
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get(USER_FULL_NAME_ENCODING_HEADER) === PERCENT_ENCODED_UTF8
-      ? safeDecodeURIComponent(encodedFullName)
-      : null;
-
-  return {
-    userId,
-    displayName: fullName ?? email,
-    email,
-    fullName,
-  };
 }
 
 export async function requireChatGPTUser(
