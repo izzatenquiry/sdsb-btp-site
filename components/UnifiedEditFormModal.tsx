@@ -1584,14 +1584,15 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         @media print {
           @page {
             size: A4 portrait;
-            margin: 0mm !important;
+            margin: 4mm 4mm 4mm 4mm !important;
           }
           html, body {
             margin: 0 !important;
             padding: 0 !important;
             width: 100% !important;
             height: 100% !important;
-            overflow: visible !important;
+            max-height: 100% !important;
+            overflow: hidden !important;
             background: #ffffff !important;
             color: #000000 !important;
           }
@@ -1620,12 +1621,11 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             visibility: visible !important;
           }
           #printable-form-sheet {
-            position: fixed !important;
-            top: 4mm !important;
-            left: 4mm !important;
-            right: 4mm !important;
-            width: calc(100% - 8mm) !important;
-            max-width: calc(100% - 8mm) !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
             padding: 0 !important;
             margin: 0 !important;
             box-shadow: none !important;
@@ -1634,6 +1634,10 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             zoom: 0.94 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           .no-print {
             display: none !important;
