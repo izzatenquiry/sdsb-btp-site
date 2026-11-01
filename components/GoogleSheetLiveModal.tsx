@@ -55,7 +55,13 @@ export function GoogleSheetLiveModal({
 
         <iframe
           src={sheetUrl}
-          className="w-full h-full border-0 bg-white"
+          className="border-0 bg-white"
+          style={{
+            width: "111.111%",
+            height: "111.111%",
+            transform: "scale(0.9)",
+            transformOrigin: "0 0",
+          }}
           title="Internal QAQC Live Tracking - Google Sheets"
           onLoad={() => setLoading(false)}
           allow="clipboard-read; clipboard-write; fullscreen"
