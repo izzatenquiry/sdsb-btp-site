@@ -511,87 +511,7 @@ export function UnifiedEditFormModal({
       win?.print();
       return;
     }
-    if (!printAreaRef.current) {
-      window.print();
-      return;
-    }
-
-    // Open an isolated, dedicated print window without modal clipping or scrollbars
-    const printWindow = window.open("", "_blank", "width=850,height=1100");
-    if (!printWindow) {
-      window.print();
-      return;
-    }
-
-    const formHtml = printAreaRef.current.innerHTML;
-    const safeTitle = String(form.refNo || currentTemplate?.docNo || "Form")
-      .replace(/[/\\?%*:|"<>]/g, "-");
-
-    printWindow.document.open();
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${safeTitle}</title>
-          <style>
-            @page {
-              size: A4 portrait;
-              margin: 5mm;
-            }
-            * {
-              box-sizing: border-box;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            html, body {
-              margin: 0;
-              padding: 0;
-              background: #ffffff !important;
-              color: #000000 !important;
-              font-family: Calibri, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            }
-            .no-print {
-              display: none !important;
-            }
-            .print-sheet {
-              width: 100%;
-              max-width: 200mm;
-              margin: 0 auto;
-              padding: 0;
-            }
-            table {
-              border-collapse: collapse !important;
-              width: 100% !important;
-            }
-            td, th {
-              border-color: #000000 !important;
-            }
-            @media print {
-              body {
-                zoom: 0.94;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="print-sheet">
-            ${formHtml}
-          </div>
-          <script>
-            window.onload = function() {
-              setTimeout(function() {
-                window.focus();
-                window.print();
-                setTimeout(function() {
-                  try { window.close(); } catch(e) {}
-                }, 1000);
-              }, 400);
-            };
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+    window.print();
   }
 
   // Download PDF
@@ -622,7 +542,6 @@ export function UnifiedEditFormModal({
         allowTaint: true,
         logging: false,
         backgroundColor: "#ffffff",
-        windowWidth: 1200,
       });
 
       const imgData = canvas.toDataURL("image/png");
@@ -635,10 +554,10 @@ export function UnifiedEditFormModal({
 
       const pageWidth = 210;
       const pageHeight = 297;
-      const marginX = 6;
-      const marginY = 6;
-      const printableW = pageWidth - marginX * 2; // 198mm
-      const printableH = pageHeight - marginY * 2; // 285mm
+      const marginX = 4;
+      const marginY = 2; // Right at the top!
+      const printableW = pageWidth - marginX * 2; // 202mm
+      const printableH = pageHeight - marginY * 2; // 293mm
 
       const canvasAspect = canvas.height / canvas.width;
 
@@ -696,7 +615,6 @@ export function UnifiedEditFormModal({
       pdf.save(`${safeRef}_Official_A4.pdf`);
     } catch (err) {
       console.error("PDF generation failed:", err);
-      // Fallback: trigger print dialog directly
       handlePrint();
     } finally {
       setDownloading(false);
@@ -1526,14 +1444,15 @@ export function UnifiedEditFormModal({
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            zoom: 0.93 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           .no-print {
             display: none !important;
           }
           @page {
             size: A4 portrait;
-            margin: 6mm;
+            margin: 2mm 5mm 2mm 5mm !important;
           }
         }
       `}</style>

@@ -439,6 +439,18 @@ export function FormPdfViewerModal({
       {/* Print styles injection */}
       <style>{`
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 2mm 5mm 2mm 5mm !important;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
           body * {
             visibility: hidden !important;
           }
@@ -452,18 +464,15 @@ export function FormPdfViewerModal({
             top: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
-            padding: 8mm !important;
+            padding: 0 !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            font-size: 10.5pt !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           .no-print {
             display: none !important;
-          }
-          @page {
-            size: A4 portrait;
-            margin: 8mm;
           }
         }
       `}</style>
