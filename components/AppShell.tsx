@@ -1,8 +1,9 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { LogOut, ExternalLink } from "lucide-react";
+import { LogOut, ExternalLink, FileSpreadsheet } from "lucide-react";
 import { applyTheme, readStoredTheme, ThemeMode, toggleTheme } from "@/lib/theme";
+import { GoogleSheetLiveModal } from "./GoogleSheetLiveModal";
 import "./appshell.css";
 
 type Props = {
@@ -53,6 +54,7 @@ export function AppShell({
   const [now, setNow] = useState<Date | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [theme, setTheme] = useState<ThemeMode>("light");
+  const [googleSheetModalOpen, setGoogleSheetModalOpen] = useState(false);
 
   useEffect(() => {
     const stored = readStoredTheme();
@@ -481,30 +483,28 @@ export function AppShell({
               <span>SDSB · BANTING TECHNOLOGY PARK (BTP) QAQC</span>
               <small>INTERNAL REGISTER CONTROL CENTRE · 22 REGISTER SNAPSHOT</small>
             </div>
-            <a
-              href="https://docs.google.com/spreadsheets/d/11Wfxz7mFVR2Gq1vuSsix_pQSVhQXgDl3Tk1B4eaKSFs/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => setGoogleSheetModalOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25 transition cursor-pointer"
-              title="Open Google Sheet in new tab"
+              title="Open Google Sheet live modal"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>GOOGLE SHEETS LIVE SYNC ACTIVE</span>
-              <ExternalLink className="h-2.5 w-2.5" />
-            </a>
+              <FileSpreadsheet className="h-2.5 w-2.5" />
+            </button>
           </div>
           <div className="edms-footer-note flex items-center divide-x divide-line text-xs">
-            <a
-              href="https://docs.google.com/spreadsheets/d/11Wfxz7mFVR2Gq1vuSsix_pQSVhQXgDl3Tk1B4eaKSFs/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 pr-2 hover:text-accent cursor-pointer transition group"
-              title="Click to open Google Sheet in new tab"
+            <button
+              type="button"
+              onClick={() => setGoogleSheetModalOpen(true)}
+              className="hidden sm:inline-flex items-center gap-1.5 pr-2 hover:text-accent cursor-pointer transition group text-left"
+              title="Click to view live Google Sheet inside modal"
             >
               <span className="text-muted">Source:</span>
               <span className="font-semibold text-accent group-hover:underline underline-offset-2">{sourceFile}</span>
-              <ExternalLink className="h-3 w-3 text-accent shrink-0" />
-            </a>
+              <FileSpreadsheet className="h-3 w-3 text-accent shrink-0" />
+            </button>
             <span className="px-2">Snapshot: {snapshotAsOf}</span>
             <button
               type="button"
@@ -517,6 +517,16 @@ export function AppShell({
           </div>
         </div>
       </footer>
+
+      {/* Fullpage Google Sheet Live Modal */}
+      {googleSheetModalOpen && (
+        <GoogleSheetLiveModal
+          open={googleSheetModalOpen}
+          onClose={() => setGoogleSheetModalOpen(false)}
+          sheetId="11Wfxz7mFVR2Gq1vuSsix_pQSVhQXgDl3Tk1B4eaKSFs"
+          sheetTitle="Internal QAQC Live Tracking"
+        />
+      )}
     </div>
   );
 }
