@@ -514,6 +514,85 @@ export function UnifiedEditFormModal({
     window.print();
   }
 
+// Helper to auto-crop whitespace from captured canvas
+function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
+  const ctx = sourceCanvas.getContext("2d");
+  if (!ctx) return sourceCanvas;
+  const w = sourceCanvas.width;
+  const h = sourceCanvas.height;
+  let imgData: ImageData;
+  try {
+    imgData = ctx.getImageData(0, 0, w, h);
+  } catch {
+    return sourceCanvas;
+  }
+  const data = imgData.data;
+
+  const isContent = (x: number, y: number) => {
+    const idx = (y * w + x) * 4;
+    const r = data[idx];
+    const g = data[idx + 1];
+    const b = data[idx + 2];
+    const a = data[idx + 3];
+    return a > 30 && (r < 240 || g < 240 || b < 240);
+  };
+
+  let top = 0;
+  let bottom = h - 1;
+  let left = 0;
+  let right = w - 1;
+
+  topLoop: for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (isContent(x, y)) {
+        top = Math.max(0, y - 1);
+        break topLoop;
+      }
+    }
+  }
+
+  bottomLoop: for (let y = h - 1; y >= 0; y--) {
+    for (let x = 0; x < w; x++) {
+      if (isContent(x, y)) {
+        bottom = Math.min(h - 1, y + 1);
+        break bottomLoop;
+      }
+    }
+  }
+
+  leftLoop: for (let x = 0; x < w; x++) {
+    for (let y = top; y <= bottom; y++) {
+      if (isContent(x, y)) {
+        left = Math.max(0, x - 1);
+        break leftLoop;
+      }
+    }
+  }
+
+  rightLoop: for (let x = w - 1; x >= 0; x--) {
+    for (let y = top; y <= bottom; y++) {
+      if (isContent(x, y)) {
+        right = Math.min(w - 1, x + 1);
+        break rightLoop;
+      }
+    }
+  }
+
+  const cropW = right - left + 1;
+  const cropH = bottom - top + 1;
+  if (cropW <= 20 || cropH <= 20) return sourceCanvas;
+
+  const cropped = document.createElement("canvas");
+  cropped.width = cropW;
+  cropped.height = cropH;
+  const cCtx = cropped.getContext("2d");
+  if (!cCtx) return sourceCanvas;
+  cCtx.fillStyle = "#ffffff";
+  cCtx.fillRect(0, 0, cropW, cropH);
+  cCtx.drawImage(sourceCanvas, left, top, cropW, cropH, 0, 0, cropW, cropH);
+  return cropped;
+}
+
   // Download PDF
   async function handleDownloadPdf() {
     if (previewMode === "scancopy" && scancopyDoc?.dataUrl) {
@@ -536,7 +615,7 @@ export function UnifiedEditFormModal({
 
       const element = printAreaRef.current;
 
-      const canvas = await html2canvas(element, {
+      const rawCanvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
@@ -558,7 +637,7 @@ export function UnifiedEditFormModal({
 
             targetEl.style.position = "static";
             targetEl.style.margin = "0 auto";
-            targetEl.style.padding = "8px";
+            targetEl.style.padding = "0px";
             targetEl.style.boxSizing = "border-box";
             targetEl.style.width = "820px";
             targetEl.style.maxWidth = "820px";
@@ -574,6 +653,9 @@ export function UnifiedEditFormModal({
         },
       });
 
+      // Auto crop all white margins around the captured form
+      const canvas = autoCropCanvas(rawCanvas);
+
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
         orientation: "portrait",
@@ -584,22 +666,16 @@ export function UnifiedEditFormModal({
 
       const pageWidth = 210;
       const pageHeight = 297;
-      const marginX = 4;
-      const marginY = 4;
-      const printableW = pageWidth - marginX * 2; // 202mm
-      const printableH = pageHeight - marginY * 2; // 289mm
+      const marginX = 3;
+      const marginY = 3;
+      const printableW = pageWidth - marginX * 2; // 204mm
+      const printableH = pageHeight - marginY * 2; // 291mm
 
       const canvasAspect = canvas.height / canvas.width;
 
-      // Fit single-page form completely without cutting off Section D, E or signatures!
-      if (canvasAspect <= 1.55) {
-        const scale = Math.min(printableW / canvas.width, printableH / canvas.height);
-        const finalW = canvas.width * scale;
-        const finalH = canvas.height * scale;
-        const posX = (pageWidth - finalW) / 2;
-        const posY = marginY;
-
-        pdf.addImage(imgData, "PNG", posX, posY, finalW, finalH, undefined, "FAST");
+      // Fit form to maximum full height from top to bottom
+      if (canvasAspect <= 1.8) {
+        pdf.addImage(imgData, "PNG", marginX, marginY, printableW, printableH, undefined, "FAST");
       } else {
         // Multi-page slicing if document is genuinely longer
         const pageCanvasH = (canvas.width * printableH) / printableW;
