@@ -75,7 +75,7 @@ export const INITIAL_ORG_MEMBERS: TeamMember[] = [
   // 3. Direct Right Under Aiman - QAQC DC Damia
   {
     id: "lead-damia",
-    name: "Damia (NUR DAMIA BT SHAFEE)",
+    name: "Nur Damia",
     role: "QAQC DC",
     discipline: "DOCUMENT & AUDIT",
     level: "dc",
@@ -237,7 +237,7 @@ export const INITIAL_ORG_MEMBERS: TeamMember[] = [
   },
 ];
 
-const STORAGE_KEY = "sdsb_btp_org_chart_members_v4";
+const STORAGE_KEY = "sdsb_btp_org_chart_members_v5";
 
 type Props = {
   open: boolean;
@@ -533,7 +533,7 @@ export function TeamModal({ open, onClose }: Props) {
       )}
 
       {/* Main Modal Body (Fitted View Without Scrolling) */}
-      <div className="min-h-0 flex-1 overflow-y-auto lg:overflow-y-hidden overflow-x-auto bg-slate-50/70 dark:bg-slate-950/60 p-2 sm:p-2.5 select-none flex flex-col justify-center items-center">
+      <div className="min-h-0 flex-1 overflow-y-auto lg:overflow-y-hidden overflow-x-auto bg-slate-100/90 dark:bg-slate-900 p-2 sm:p-2.5 select-none flex flex-col justify-center items-center">
         {viewMode === "chart" ? (
           /* ================= SLEEK & FITTED ORG CHART WITH CLEAN ORTHOGONAL BUSES ================= */
           <div className="min-w-[800px] max-w-[820px] mx-auto flex flex-col items-center justify-center my-auto">
@@ -1180,72 +1180,72 @@ function PackageCard({
   engineers: TeamMember[];
   onSelectStaff: (m: TeamMember) => void;
 }) {
-  const colorMap = {
-    purple: "border-purple-500/40 bg-purple-500/5 text-purple-700 dark:text-purple-300",
-    sky: "border-sky-500/40 bg-sky-500/5 text-sky-700 dark:text-sky-300",
-    indigo: "border-indigo-500/40 bg-indigo-500/5 text-indigo-700 dark:text-indigo-300",
-    amber: "border-amber-500/40 bg-amber-500/5 text-amber-700 dark:text-amber-300",
+  const borderMap = {
+    purple: "border-purple-300 dark:border-purple-700/70",
+    sky: "border-sky-300 dark:border-sky-700/70",
+    indigo: "border-indigo-300 dark:border-indigo-700/70",
+    amber: "border-amber-300 dark:border-amber-700/70",
   };
 
-  const badgeColorMap = {
-    purple: "bg-purple-500/15 border-purple-500/30 text-purple-700 dark:text-purple-300",
-    sky: "bg-sky-500/15 border-sky-500/30 text-sky-700 dark:text-sky-300",
-    indigo: "bg-indigo-500/15 border-indigo-500/30 text-indigo-700 dark:text-indigo-300",
-    amber: "bg-amber-500/15 border-amber-500/30 text-amber-700 dark:text-amber-300",
+  const titleBadgeMap = {
+    purple: "bg-purple-100 text-purple-900 dark:bg-purple-950/80 dark:text-purple-200 border-purple-200 dark:border-purple-800",
+    sky: "bg-sky-100 text-sky-900 dark:bg-sky-950/80 dark:text-sky-200 border-sky-200 dark:border-sky-800",
+    indigo: "bg-indigo-100 text-indigo-900 dark:bg-indigo-950/80 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800",
+    amber: "bg-amber-100 text-amber-900 dark:bg-amber-950/80 dark:text-amber-200 border-amber-200 dark:border-amber-800",
   };
 
   return (
     <div
-      className={`w-full max-w-[185px] rounded-xl border bg-paper-elevated shadow-2xs transition hover:shadow-xs p-1.5 flex flex-col ${colorMap[color]}`}
+      className={`w-full max-w-[185px] rounded-xl border bg-white dark:bg-slate-800 shadow-xs transition hover:shadow-md p-2 flex flex-col ${borderMap[color]}`}
     >
       {/* Header Bar */}
-      <div className="flex items-center justify-between border-b border-line/60 pb-1 mb-1 px-0.5">
-        <span className="text-[10px] font-black uppercase tracking-wider">
+      <div className="flex items-center justify-between border-b border-line/60 pb-1.5 mb-1.5 px-0.5">
+        <span className={`text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border ${titleBadgeMap[color]}`}>
           {packageTitle}
         </span>
         <span
-          className={`text-[7.5px] font-bold px-1.5 py-0.2 rounded border ${badgeColorMap[color]}`}
+          className="text-[8px] font-bold px-1.5 py-0.2 rounded border bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-line"
         >
           {engineers.length > 1 ? `${engineers.length} Engineers` : "QAQC Eng"}
         </span>
       </div>
 
       {/* Engineer rows */}
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         {engineers.map((eng, idx) => {
           const hasEmail = Boolean(eng.email && eng.email.includes("@"));
           return (
             <div
               key={eng.id}
               onClick={() => onSelectStaff(eng)}
-              className="group rounded-lg p-1 transition hover:bg-paper cursor-pointer select-none text-ink"
+              className="group rounded-lg p-1.5 transition hover:bg-slate-50 dark:hover:bg-slate-700/60 cursor-pointer select-none text-ink border border-transparent hover:border-line/60"
               title={`Click to edit email for ${eng.name}`}
             >
-              {idx > 0 && <div className="border-t border-line/50 mb-1" />}
+              {idx > 0 && <div className="border-t border-line/50 mb-1.5" />}
               <div className="flex items-center justify-between gap-1">
                 <div className="flex items-center gap-1 min-w-0">
-                  <HardHat className="h-3 w-3 text-accent shrink-0" />
-                  <span className="text-[10px] font-bold text-ink truncate group-hover:text-accent transition">
+                  <HardHat className="h-3.5 w-3.5 text-accent shrink-0" />
+                  <span className="text-[11px] font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-accent transition">
                     {eng.name}
                   </span>
                 </div>
                 {eng.discipline && (
-                  <span className="rounded bg-paper px-1 py-0.2 text-[7px] font-bold text-muted border border-line shrink-0">
+                  <span className="rounded bg-slate-100 dark:bg-slate-700/70 px-1 py-0.2 text-[7.5px] font-bold text-slate-600 dark:text-slate-300 border border-line shrink-0">
                     {eng.discipline}
                   </span>
                 )}
               </div>
 
-              <div className="flex items-center justify-between gap-1 mt-0.5 text-[8.5px]">
-                <span className="text-muted font-mono truncate">{eng.phone}</span>
+              <div className="flex items-center justify-between gap-1 mt-1 text-[9px]">
+                <span className="text-slate-500 dark:text-slate-400 font-mono truncate">{eng.phone}</span>
                 {hasEmail ? (
-                  <span className="text-accent font-mono truncate max-w-[85px] flex items-center gap-0.5">
-                    <Mail className="h-2 w-2 shrink-0" />
+                  <span className="text-teal-700 dark:text-teal-300 font-mono truncate max-w-[90px] flex items-center gap-0.5 font-semibold">
+                    <Mail className="h-2.5 w-2.5 shrink-0" />
                     <span className="truncate">{eng.email.split("@")[0]}</span>
                   </span>
                 ) : (
-                  <span className="text-amber-600 dark:text-amber-400 font-bold text-[7.5px] flex items-center gap-0.5">
-                    <Plus className="h-2 w-2" />
+                  <span className="text-amber-600 dark:text-amber-400 font-bold text-[8px] flex items-center gap-0.5">
+                    <Plus className="h-2.5 w-2.5" />
                     <span>Email</span>
                   </span>
                 )}
@@ -1279,17 +1279,17 @@ function ModernOrgCard({
 
   const themeStyles = {
     executive:
-      "border-amber-400/80 bg-gradient-to-b from-amber-500/10 to-amber-500/5 hover:border-amber-500 hover:shadow-xs",
+      "border-amber-400 dark:border-amber-500 bg-white dark:bg-slate-800 shadow-xs hover:border-amber-500 hover:shadow-md",
     manager:
-      "border-emerald-500/80 bg-gradient-to-b from-emerald-500/10 to-emerald-500/5 hover:border-emerald-500 hover:shadow-xs",
+      "border-emerald-500 dark:border-emerald-400 bg-white dark:bg-slate-800 shadow-xs hover:border-emerald-400 hover:shadow-md",
     dc:
-      "border-teal-500 bg-gradient-to-b from-teal-500/15 to-teal-500/5 ring-1 ring-teal-500/30 hover:border-teal-400 hover:shadow-xs",
+      "border-teal-500 dark:border-teal-400 bg-white dark:bg-slate-800 ring-2 ring-teal-500/20 shadow-xs hover:border-teal-400 hover:shadow-md",
     engineer:
-      "border-line bg-paper-elevated hover:border-accent hover:shadow-xs",
+      "border-line bg-white dark:bg-slate-800 shadow-xs hover:border-accent hover:shadow-md",
     support:
-      "border-sky-400/60 bg-sky-500/5 hover:border-sky-500 hover:shadow-xs",
+      "border-sky-400 dark:border-sky-500 bg-white dark:bg-slate-800 shadow-xs hover:border-sky-300 hover:shadow-md",
     supervisor:
-      "border-line/70 bg-paper/60 hover:border-line hover:bg-paper",
+      "border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-xs hover:border-accent hover:shadow-md",
   };
 
   const widthClass = fullWidth
@@ -1301,58 +1301,58 @@ function ModernOrgCard({
   return (
     <div
       onClick={onSelect}
-      className={`group relative rounded-lg border p-1.5 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-xs cursor-pointer select-none text-ink ${widthClass} ${themeStyles[theme]}`}
-      title={`Click to edit email for ${member.name}`}
+      className={`group relative rounded-xl border p-2 transition-all duration-150 hover:-translate-y-0.5 cursor-pointer select-none text-ink ${widthClass} ${themeStyles[theme]}`}
+      title={`Click to edit contact for ${member.name}`}
     >
       {/* Top Header Row with Icon & Badge */}
-      <div className="flex items-center justify-between gap-1 mb-1">
-        <div className="flex items-center gap-1 min-w-0">
-          <span className="grid h-4.5 w-4.5 place-items-center rounded bg-field border border-line shrink-0">
+      <div className="flex items-center justify-between gap-1 mb-1.5">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="grid h-5 w-5 place-items-center rounded-md bg-slate-100 dark:bg-slate-700 border border-line shrink-0">
             {icon}
           </span>
-          <span className="text-[8px] font-black uppercase tracking-tight text-ink/80 truncate">
+          <span className="text-[8.5px] font-black uppercase tracking-tight text-slate-700 dark:text-slate-300 truncate">
             {member.role}
           </span>
         </div>
 
         {badgeText ? (
-          <span className="rounded bg-accent/15 px-1 py-0.2 text-[7.5px] font-bold text-accent shrink-0">
+          <span className="rounded bg-teal-500/15 border border-teal-500/30 px-1.5 py-0.2 text-[8px] font-bold text-teal-700 dark:text-teal-300 shrink-0">
             {badgeText}
           </span>
         ) : member.discipline ? (
-          <span className="rounded bg-paper px-1 py-0.2 text-[7.5px] font-bold text-muted border border-line shrink-0">
+          <span className="rounded bg-slate-100 dark:bg-slate-700 px-1.5 py-0.2 text-[8px] font-bold text-slate-600 dark:text-slate-300 border border-line shrink-0">
             {member.discipline}
           </span>
         ) : null}
       </div>
 
       {/* Name and Phone */}
-      <div className="mb-1 leading-tight">
-        <h4 className="text-[10.5px] font-black tracking-tight text-ink truncate group-hover:text-accent transition">
+      <div className="mb-1.5 leading-tight">
+        <h4 className="text-[11px] font-black tracking-tight text-slate-900 dark:text-slate-100 truncate group-hover:text-accent transition">
           {member.name}
         </h4>
-        <div className="flex items-center gap-1 text-[8.5px] text-muted font-mono mt-0.5">
-          <Phone className="h-2 w-2 shrink-0" />
+        <div className="flex items-center gap-1 text-[9px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+          <Phone className="h-2.5 w-2.5 shrink-0" />
           <span className="truncate">{member.phone}</span>
         </div>
       </div>
 
       {/* Email Action Pill */}
-      <div className="pt-1 border-t border-line/50">
+      <div className="pt-1.5 border-t border-line/60">
         {hasEmail ? (
           <div
-            className="flex items-center justify-between rounded bg-paper/80 hover:bg-paper border border-line/70 px-1.5 py-0.5 text-[8.5px] text-ink font-semibold transition"
+            className="flex items-center justify-between rounded bg-slate-50 dark:bg-slate-900 border border-line px-1.5 py-0.5 text-[9px] font-semibold transition"
             title={member.email}
           >
-            <span className="flex items-center gap-1 text-accent truncate">
+            <span className="flex items-center gap-1 text-teal-700 dark:text-teal-300 truncate">
               <Mail className="h-2.5 w-2.5 shrink-0" />
               <span className="truncate font-mono">{member.email.split("@")[0]}</span>
             </span>
-            <Edit3 className="h-2.5 w-2.5 text-muted opacity-0 group-hover:opacity-100 transition shrink-0 ml-0.5" />
+            <Edit3 className="h-2.5 w-2.5 text-slate-400 opacity-0 group-hover:opacity-100 transition shrink-0 ml-0.5" />
           </div>
         ) : (
-          <div className="flex items-center justify-center gap-0.5 rounded border border-dashed border-amber-500/50 bg-amber-500/10 px-1 py-0.5 text-[8px] font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 transition">
-            <Plus className="h-2 w-2" />
+          <div className="flex items-center justify-center gap-0.5 rounded border border-dashed border-amber-500/50 bg-amber-500/10 px-1 py-0.5 text-[8.5px] font-bold text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 transition">
+            <Plus className="h-2.5 w-2.5" />
             <span>+ Email</span>
           </div>
         )}

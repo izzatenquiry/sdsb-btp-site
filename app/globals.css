@@ -1,56 +1,57 @@
 @import "tailwindcss";
 
-/* Daylight — clean teal-slate paper workspace matching KLC-GEMAS-DEPOT */
+/* Daylight — clean, crisp, high-contrast executive workspace */
 :root,
 [data-theme="light"] {
   --ink: #0f172a;
   --ink-soft: #334155;
-  --navy: #0b1220;
-  --paper: #d5dde8;
+  --navy: #0f172a;
+  --paper: #f8fafc;
   --paper-elevated: #ffffff;
   --field: #ffffff;
-  --line: #c2ccd9;
+  --line: #cbd5e1;
   --muted: #64748b;
   --accent: #0f766e;
   --accent-bright: #14b8a6;
-  --warn: #c2410c;
-  --ok: #047857;
+  --warn: #d97706;
+  --ok: #059669;
   --danger: #dc2626;
   --on-light: #0f172a;
-  --header-fg: #e8eef8;
+  --header-fg: #f8fafc;
   --font-display: Calibri, "Segoe UI", sans-serif;
   --font-body: Calibri, "Segoe UI", sans-serif;
-  --body-bg: linear-gradient(180deg, #c8d2e0 0%, var(--paper) 48%);
-  --glass-bg: color-mix(in srgb, white 94%, transparent);
-  --glass-border: color-mix(in srgb, white 65%, var(--line));
+  --body-bg: #e8ecf2;
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(203, 213, 225, 0.8);
   --glass-shadow:
     0 1px 0 rgba(255, 255, 255, 0.75) inset,
-    0 10px 28px -20px rgba(15, 23, 42, 0.28);
+    0 10px 28px -20px rgba(15, 23, 42, 0.15);
 }
 
-/* Dark mode — subdued slate-navy, muted brass */
-[data-theme="dark"] {
-  --ink: #d8dee8;
-  --ink-soft: #9aa8bc;
-  --navy: #0a0e14;
-  --paper: #0f141c;
-  --paper-elevated: #161d28;
-  --field: #1c2430;
-  --line: #2a3444;
-  --muted: #7a879c;
-  --accent: #7a9bc4;
-  --accent-bright: #c4a35a;
-  --warn: #c9852a;
-  --ok: #3d9a74;
-  --danger: #d47373;
-  --on-light: #0b1220;
-  --header-fg: #d8dee8;
-  --body-bg: linear-gradient(180deg, #0c1118 0%, var(--paper) 55%);
-  --glass-bg: color-mix(in srgb, var(--paper-elevated) 92%, transparent);
-  --glass-border: color-mix(in srgb, var(--line) 85%, transparent);
+/* Dark mode — deep sleek slate-navy with crisp vibrant contrast */
+[data-theme="dark"],
+html.dark {
+  --ink: #f8fafc;
+  --ink-soft: #cbd5e1;
+  --navy: #020617;
+  --paper: #0b111e;
+  --paper-elevated: #151e2e;
+  --field: #111827;
+  --line: #243044;
+  --muted: #94a3b8;
+  --accent: #2dd4bf;
+  --accent-bright: #14b8a6;
+  --warn: #f59e0b;
+  --ok: #10b981;
+  --danger: #f87171;
+  --on-light: #0b111e;
+  --header-fg: #f8fafc;
+  --body-bg: #070b12;
+  --glass-bg: rgba(21, 30, 46, 0.92);
+  --glass-border: rgba(36, 48, 68, 0.8);
   --glass-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.03) inset,
-    0 12px 28px -18px rgba(0, 0, 0, 0.65);
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 12px 28px -18px rgba(0, 0, 0, 0.7);
 }
 
 @theme inline {

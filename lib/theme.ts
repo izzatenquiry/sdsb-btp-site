@@ -16,6 +16,13 @@ export function readStoredTheme(): ThemeMode {
 export function applyTheme(mode: ThemeMode, persist = true) {
   if (typeof document === "undefined") return;
   document.documentElement.setAttribute("data-theme", mode);
+  if (mode === "dark") {
+    document.documentElement.classList.add("dark");
+    document.body?.classList.add("dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+    document.body?.classList.remove("dark");
+  }
   if (!persist) return;
   try {
     localStorage.setItem(THEME_STORAGE_KEY, mode);

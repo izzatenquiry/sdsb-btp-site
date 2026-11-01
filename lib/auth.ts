@@ -21,7 +21,7 @@ export type StaffUser = {
 export const STAFF_REGISTRY: Record<string, StaffUser> = {
   damia: {
     id: "usr-damia",
-    name: "NUR DAMIA BT SHAFEE",
+    name: "Nur Damia",
     email: "damia.sdsbbtp@gmail.com",
     role: "Document Controller & QAQC Admin",
     position: "Lead Document Controller & QAQC Admin",
