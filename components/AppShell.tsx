@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { LogOut } from "lucide-react";
+import { LogOut, ExternalLink } from "lucide-react";
 import { applyTheme, readStoredTheme, ThemeMode, toggleTheme } from "@/lib/theme";
 import "./appshell.css";
 
@@ -481,14 +481,31 @@ export function AppShell({
               <span>SDSB · BANTING TECHNOLOGY PARK (BTP) QAQC</span>
               <small>INTERNAL REGISTER CONTROL CENTRE · 22 REGISTER SNAPSHOT</small>
             </div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
+            <a
+              href="https://docs.google.com/spreadsheets/d/11Wfxz7mFVR2Gq1vuSsix_pQSVhQXgDl3Tk1B4eaKSFs/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25 transition cursor-pointer"
+              title="Open Google Sheet in new tab"
+            >
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              GOOGLE SHEETS LIVE SYNC ACTIVE
-            </span>
+              <span>GOOGLE SHEETS LIVE SYNC ACTIVE</span>
+              <ExternalLink className="h-2.5 w-2.5" />
+            </a>
           </div>
           <div className="edms-footer-note flex items-center divide-x divide-line text-xs">
-            <span className="hidden sm:inline">Source: {sourceFile}</span>
-            <span>Snapshot: {snapshotAsOf}</span>
+            <a
+              href="https://docs.google.com/spreadsheets/d/11Wfxz7mFVR2Gq1vuSsix_pQSVhQXgDl3Tk1B4eaKSFs/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 pr-2 hover:text-accent cursor-pointer transition group"
+              title="Click to open Google Sheet in new tab"
+            >
+              <span className="text-muted">Source:</span>
+              <span className="font-semibold text-accent group-hover:underline underline-offset-2">{sourceFile}</span>
+              <ExternalLink className="h-3 w-3 text-accent shrink-0" />
+            </a>
+            <span className="px-2">Snapshot: {snapshotAsOf}</span>
             <button
               type="button"
               onClick={onOpenHealth}
