@@ -182,11 +182,15 @@ export function FormPdfViewerModal({
       const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
 
-      const canvas = await html2canvas(printAreaRef.current, {
+      const element = printAreaRef.current;
+
+      const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         logging: false,
         backgroundColor: "#ffffff",
+        windowWidth: 1200,
       });
 
       const imgData = canvas.toDataURL("image/png");
@@ -194,29 +198,69 @@ export function FormPdfViewerModal({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
+        compress: true,
       });
 
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const marginX = 6;
+      const marginY = 6;
+      const printableW = pageWidth - marginX * 2; // 198mm
+      const printableH = pageHeight - marginY * 2; // 285mm
 
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      const canvasAspect = canvas.height / canvas.width;
 
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+      if (canvasAspect <= 1.6) {
+        const scale = Math.min(printableW / canvas.width, printableH / canvas.height);
+        const finalW = canvas.width * scale;
+        const finalH = canvas.height * scale;
+        const posX = (pageWidth - finalW) / 2;
+        const posY = marginY;
+
+        pdf.addImage(imgData, "PNG", posX, posY, finalW, finalH, undefined, "FAST");
+      } else {
+        const pageCanvasH = (canvas.width * printableH) / printableW;
+        let sourceY = 0;
+        let pageIdx = 0;
+
+        while (sourceY < canvas.height) {
+          if (pageIdx > 0) pdf.addPage();
+
+          const sliceH = Math.min(pageCanvasH, canvas.height - sourceY);
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = sliceH;
+          const ctx = tempCanvas.getContext("2d");
+          if (ctx) {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            ctx.drawImage(
+              canvas,
+              0,
+              sourceY,
+              canvas.width,
+              sliceH,
+              0,
+              0,
+              canvas.width,
+              sliceH
+            );
+            const sliceData = tempCanvas.toDataURL("image/png");
+            const slicePdfH = (sliceH * printableW) / canvas.width;
+            pdf.addImage(sliceData, "PNG", marginX, marginY, printableW, slicePdfH, undefined, "FAST");
+          }
+          sourceY += pageCanvasH;
+          pageIdx++;
+        }
       }
 
-      const filename = `${template.code}_${formData.refNo || "Form"}.pdf`.replace(/[^a-zA-Z0-9._-]+/g, "_");
+      const filename = `${template.code}_${formData.refNo || "Form"}.pdf`
+        .replace(/[/\\?%*:|"<>]/g, "-")
+        .replace(/\s+/g, "_");
       pdf.save(filename);
     } catch (err) {
       console.error("PDF generation failed:", err);
-      window.print();
+      handlePrint();
     } finally {
       setDownloading(false);
     }

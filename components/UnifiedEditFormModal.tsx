@@ -511,7 +511,87 @@ export function UnifiedEditFormModal({
       win?.print();
       return;
     }
-    window.print();
+    if (!printAreaRef.current) {
+      window.print();
+      return;
+    }
+
+    // Open an isolated, dedicated print window without modal clipping or scrollbars
+    const printWindow = window.open("", "_blank", "width=850,height=1100");
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    const formHtml = printAreaRef.current.innerHTML;
+    const safeTitle = String(form.refNo || currentTemplate?.docNo || "Form")
+      .replace(/[/\\?%*:|"<>]/g, "-");
+
+    printWindow.document.open();
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${safeTitle}</title>
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 5mm;
+            }
+            * {
+              box-sizing: border-box;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              background: #ffffff !important;
+              color: #000000 !important;
+              font-family: Calibri, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            }
+            .no-print {
+              display: none !important;
+            }
+            .print-sheet {
+              width: 100%;
+              max-width: 200mm;
+              margin: 0 auto;
+              padding: 0;
+            }
+            table {
+              border-collapse: collapse !important;
+              width: 100% !important;
+            }
+            td, th {
+              border-color: #000000 !important;
+            }
+            @media print {
+              body {
+                zoom: 0.94;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-sheet">
+            ${formHtml}
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.focus();
+                window.print();
+                setTimeout(function() {
+                  try { window.close(); } catch(e) {}
+                }, 1000);
+              }, 400);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   }
 
   // Download PDF
@@ -519,7 +599,10 @@ export function UnifiedEditFormModal({
     if (previewMode === "scancopy" && scancopyDoc?.dataUrl) {
       const a = document.createElement("a");
       a.href = scancopyDoc.dataUrl;
-      a.download = scancopyDoc.fileName || `${form.refNo || "Scancopy"}.pdf`;
+      const safeName = (scancopyDoc.fileName || `${form.refNo || "Scancopy"}.pdf`)
+        .replace(/[/\\?%*:|"<>]/g, "-")
+        .replace(/\s+/g, "_");
+      a.download = safeName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -531,11 +614,15 @@ export function UnifiedEditFormModal({
       const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
 
-      const canvas = await html2canvas(printAreaRef.current, {
+      const element = printAreaRef.current;
+
+      const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         logging: false,
         backgroundColor: "#ffffff",
+        windowWidth: 1200,
       });
 
       const imgData = canvas.toDataURL("image/png");
@@ -543,16 +630,74 @@ export function UnifiedEditFormModal({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
+        compress: true,
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const marginX = 6;
+      const marginY = 6;
+      const printableW = pageWidth - marginX * 2; // 198mm
+      const printableH = pageHeight - marginY * 2; // 285mm
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`${form.refNo || currentTemplate.docNo || "Form"}_Preview.pdf`);
+      const canvasAspect = canvas.height / canvas.width;
+
+      // Fit 1-page form completely without cutting off Section D or E!
+      if (canvasAspect <= 1.6) {
+        const scale = Math.min(printableW / canvas.width, printableH / canvas.height);
+        const finalW = canvas.width * scale;
+        const finalH = canvas.height * scale;
+        const posX = (pageWidth - finalW) / 2;
+        const posY = marginY;
+
+        pdf.addImage(imgData, "PNG", posX, posY, finalW, finalH, undefined, "FAST");
+      } else {
+        // Multi-page slicing if document is genuinely longer
+        const pageCanvasH = (canvas.width * printableH) / printableW;
+        let sourceY = 0;
+        let pageIdx = 0;
+
+        while (sourceY < canvas.height) {
+          if (pageIdx > 0) pdf.addPage();
+
+          const sliceH = Math.min(pageCanvasH, canvas.height - sourceY);
+          const tempCanvas = document.createElement("canvas");
+          tempCanvas.width = canvas.width;
+          tempCanvas.height = sliceH;
+          const ctx = tempCanvas.getContext("2d");
+          if (ctx) {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            ctx.drawImage(
+              canvas,
+              0,
+              sourceY,
+              canvas.width,
+              sliceH,
+              0,
+              0,
+              canvas.width,
+              sliceH
+            );
+            const sliceData = tempCanvas.toDataURL("image/png");
+            const slicePdfH = (sliceH * printableW) / canvas.width;
+            pdf.addImage(sliceData, "PNG", marginX, marginY, printableW, slicePdfH, undefined, "FAST");
+          }
+          sourceY += pageCanvasH;
+          pageIdx++;
+        }
+      }
+
+      // Safe filename without invalid characters like / or :
+      const safeRef = String(form.refNo || currentTemplate.docNo || "Form")
+        .replace(/[/\\?%*:|"<>]/g, "-")
+        .replace(/\s+/g, "_")
+        .trim();
+      pdf.save(`${safeRef}_Official_A4.pdf`);
     } catch (err) {
       console.error("PDF generation failed:", err);
-      alert("Failed to generate PDF. You can also use the browser Print option (Ctrl+P).");
+      // Fallback: trigger print dialog directly
+      handlePrint();
     } finally {
       setDownloading(false);
     }
@@ -1215,8 +1360,7 @@ export function UnifiedEditFormModal({
               <div
                 id="printable-form-sheet"
                 ref={printAreaRef}
-                className="w-full max-w-[820px] bg-white text-slate-900 shadow-2xl rounded-sm p-6 sm:p-8 border border-slate-300 dark:border-slate-800 transition-all font-sans leading-normal self-start"
-                style={{ minHeight: "1050px" }}
+                className="w-full max-w-[820px] bg-white text-slate-900 shadow-2xl rounded-sm p-4 sm:p-6 border border-slate-300 dark:border-slate-800 transition-all font-sans leading-normal self-start"
               >
                 {selectedTemplateId === "rfwi" && (
                   <RfwiSheet formData={liveFormData} setFormData={setSheetFields} />
@@ -1360,6 +1504,11 @@ export function UnifiedEditFormModal({
       {/* Print styles injection */}
       <style>{`
         @media print {
+          html, body {
+            overflow: visible !important;
+            height: auto !important;
+            background: #ffffff !important;
+          }
           body * {
             visibility: hidden !important;
           }
@@ -1373,18 +1522,18 @@ export function UnifiedEditFormModal({
             top: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
-            padding: 8mm !important;
+            padding: 0 !important;
             margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
-            font-size: 10.5pt !important;
+            zoom: 0.93 !important;
           }
           .no-print {
             display: none !important;
           }
           @page {
             size: A4 portrait;
-            margin: 8mm;
+            margin: 6mm;
           }
         }
       `}</style>
