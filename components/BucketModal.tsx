@@ -11,7 +11,8 @@ import {
   MODAL_TITLE_CLASS,
 } from "./CenteredModal";
 import type { RecordRow } from "./RecordModal";
-import { Search, Filter, Layers, Clock, Calendar } from "lucide-react";
+import { Search, Filter, Layers, Clock, Calendar, FileCheck2 } from "lucide-react";
+import { hasScancopySync } from "@/lib/scancopy-storage";
 
 type Props = {
   open: boolean;
@@ -106,8 +107,8 @@ export function BucketModal({
         {filteredRows.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center text-muted">
             <Layers className="h-10 w-10 text-slate-300 mb-2" />
-            <p className="text-sm font-semibold">Tiada rekod ditemui</p>
-            <p className="text-xs">Cuba tukar kata carian anda.</p>
+            <p className="text-sm font-semibold">No records found</p>
+            <p className="text-xs">Try adjusting your search criteria.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -122,12 +123,20 @@ export function BucketModal({
                 className="text-left rounded-xl border border-line bg-paper p-3 transition-all duration-150 hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-xs cursor-pointer flex flex-col justify-between group"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-1.5 mb-1.5">
-                    <span className="text-xs font-mono font-bold text-accent group-hover:underline">
-                      {r.refNo}
-                    </span>
+                  <div className="flex items-center justify-between gap-1.5 mb-1.5 flex-wrap">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-xs font-mono font-bold text-accent group-hover:underline truncate">
+                        {r.refNo}
+                      </span>
+                      {hasScancopySync(r.refNo) && (
+                        <span className="inline-flex items-center gap-0.5 rounded bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/25 px-1 py-0.2 text-[8.5px] font-bold">
+                          <FileCheck2 className="h-2.5 w-2.5" />
+                          PDF
+                        </span>
+                      )}
+                    </div>
                     <span
-                      className={`rounded px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider ${
+                      className={`rounded px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider shrink-0 ${
                         (r.status || "").toLowerCase().includes("closed") ||
                         (r.status || "").toLowerCase().includes("passed")
                           ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"

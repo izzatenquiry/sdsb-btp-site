@@ -37,7 +37,17 @@ import {
   Save,
   Eye,
   Layers,
+  Upload,
+  Trash2,
+  FileCheck2,
 } from "lucide-react";
+import { ScancopyViewerModal } from "./ScancopyViewerModal";
+import {
+  getScancopyMetaSync,
+  saveScancopyDocument,
+  deleteScancopyDocument,
+  type ScancopyMeta,
+} from "@/lib/scancopy-storage";
 
 // Import all official form sheet components
 import { RfwiSheet } from "./forms/RfwiSheet";
@@ -88,6 +98,12 @@ export function UnifiedEditFormModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("rfwi");
+
+  // Scancopy closed document state
+  const [scancopyMeta, setScancopyMeta] = useState<ScancopyMeta | null>(null);
+  const [scancopyViewerOpen, setScancopyViewerOpen] = useState(false);
+  const [scancopyUploading, setScancopyUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form edit fields
   const [form, setForm] = useState<FormValue>(blankForm());
@@ -295,6 +311,53 @@ export function UnifiedEditFormModal({
     }
     setError("");
   }, [open, editing, defaultSubcategory, defaultCategory]);
+
+  // Sync scancopy meta whenever form.refNo or modal opens
+  useEffect(() => {
+    if (form.refNo) {
+      setScancopyMeta(getScancopyMetaSync(form.refNo));
+    } else {
+      setScancopyMeta(null);
+    }
+  }, [form.refNo, open]);
+
+  async function handleScancopyFileSelected(file: File) {
+    if (!form.refNo) {
+      alert("Please provide the Internal Ref No before uploading a scancopy.");
+      return;
+    }
+    setScancopyUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const dataUrl = reader.result as string;
+        await saveScancopyDocument({
+          refNo: form.refNo,
+          recordId: editing?.id || "",
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type || "application/pdf",
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: form.staffPic || "Nur Damia",
+          dataUrl,
+        });
+        setScancopyMeta(getScancopyMetaSync(form.refNo));
+        setScancopyUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Scancopy upload error:", err);
+      setScancopyUploading(false);
+    }
+  }
+
+  async function handleRemoveScancopy() {
+    if (!form.refNo) return;
+    if (confirm(`Remove attached scancopy for ${form.refNo}?`)) {
+      await deleteScancopyDocument(form.refNo);
+      setScancopyMeta(null);
+    }
+  }
 
   // The active template object
   const currentTemplate = useMemo(() => {
@@ -869,6 +932,90 @@ export function UnifiedEditFormModal({
                   placeholder="Supporting drawings, inspection remarks, follow-up actions..."
                 />
               </label>
+
+              {/* Closed Signed Document Scancopy (PDF / Consultant Sign-off) */}
+              <div className="rounded-xl border border-line bg-field/30 p-3 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wide flex items-center gap-1.5">
+                    <FileCheck2 className="h-3.5 w-3.5" />
+                    Closed Scancopy Document (Signed PDF)
+                  </span>
+                  {scancopyMeta && (
+                    <span className="rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25 px-1.5 py-0.5 text-[9px] font-bold">
+                      ATTACHED
+                    </span>
+                  )}
+                </div>
+
+                {scancopyMeta ? (
+                  <div className="rounded-lg border border-line bg-paper p-2.5 flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 font-semibold text-ink text-xs truncate">
+                        <FileText className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                        <span className="truncate">{scancopyMeta.fileName}</span>
+                      </div>
+                      <p className="text-[10px] text-muted truncate mt-0.5">
+                        {(scancopyMeta.fileSize / 1024).toFixed(1)} KB · Uploaded by {scancopyMeta.uploadedBy}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setScancopyViewerOpen(true)}
+                        className="inline-flex items-center gap-1 rounded-md bg-accent/10 border border-accent/30 text-accent px-2 py-1 text-[11px] font-semibold hover:bg-accent hover:text-white transition cursor-pointer"
+                      >
+                        <Eye className="h-3 w-3" />
+                        Preview
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        title="Replace file"
+                        className="inline-flex items-center gap-1 rounded-md border border-line bg-field px-2 py-1 text-[11px] font-semibold text-muted hover:text-ink transition cursor-pointer"
+                      >
+                        <Upload className="h-3 w-3" />
+                        Replace
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemoveScancopy}
+                        title="Remove scancopy"
+                        className="rounded-md border border-red-500/30 text-red-600 dark:text-red-400 p-1 hover:bg-red-500/10 transition cursor-pointer"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="rounded-lg border border-dashed border-rose-400/50 bg-rose-500/5 p-3 text-center cursor-pointer hover:bg-rose-500/10 hover:border-rose-500 transition group"
+                  >
+                    <Upload className="h-5 w-5 text-rose-500 mx-auto mb-1 group-hover:scale-110 transition" />
+                    <p className="text-xs font-semibold text-ink">
+                      {scancopyUploading ? "Uploading scancopy..." : "Upload Closed Scancopy PDF"}
+                    </p>
+                    <p className="text-[10px] text-muted mt-0.5">
+                      Click to attach consultant-signed copy or inspection sign-off document
+                    </p>
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf,image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      void handleScancopyFileSelected(file);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+              </div>
             </div>
 
             {/* Left Column Sticky Save Actions */}
@@ -1011,6 +1158,31 @@ export function UnifiedEditFormModal({
           }
         }
       `}</style>
+
+      {/* Scancopy Preview & Detail Modal */}
+      {scancopyViewerOpen && (
+        <ScancopyViewerModal
+          open={scancopyViewerOpen}
+          onClose={() => {
+            setScancopyViewerOpen(false);
+            if (form.refNo) {
+              setScancopyMeta(getScancopyMetaSync(form.refNo));
+            }
+          }}
+          refNo={form.refNo}
+          recordId={editing?.id || ""}
+          title={form.title}
+          category={form.category}
+          subcategory={form.subcategory}
+          status={form.status}
+          userName={form.staffPic || "Nur Damia"}
+          onScancopyChanged={() => {
+            if (form.refNo) {
+              setScancopyMeta(getScancopyMetaSync(form.refNo));
+            }
+          }}
+        />
+      )}
     </CenteredModal>
   );
 }

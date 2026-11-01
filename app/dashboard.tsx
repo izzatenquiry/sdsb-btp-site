@@ -33,6 +33,8 @@ import { PageHeader, toolbarControlClass } from "@/components/PageHeader";
 import { RecordModal, type RecordRow } from "@/components/RecordModal";
 import { UnifiedEditFormModal } from "@/components/UnifiedEditFormModal";
 import { BucketModal } from "@/components/BucketModal";
+import { ScancopyViewerModal } from "@/components/ScancopyViewerModal";
+import { hasScancopySync, initializeSampleScancopyIfEmpty } from "@/lib/scancopy-storage";
 import { QAQCCalendar } from "@/components/QAQCCalendar";
 import { ActionRequiredModal } from "@/components/ActionRequiredModal";
 import { RegisterHealthModal } from "@/components/RegisterHealthModal";
@@ -221,6 +223,10 @@ export function Dashboard({
   const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [formsBankModalOpen, setFormsBankModalOpen] = useState(false);
 
+  // Closed Scancopy PDF Viewer & Upload Modal
+  const [scancopyRecord, setScancopyRecord] = useState<RecordRow | null>(null);
+  const [scancopyVersion, setScancopyVersion] = useState(0);
+
   // DSR & Staff Daily Activity Modals (accessible directly from QAQCCalendar and Profile)
   const [dsrCalendarOpen, setDsrCalendarOpen] = useState(false);
   const [dsrFormOpen, setDsrFormOpen] = useState(false);
@@ -278,6 +284,7 @@ export function Dashboard({
   }, []);
 
   useEffect(() => {
+    initializeSampleScancopyIfEmpty();
     void refreshData();
     const interval = setInterval(() => void refreshData(true), 30000);
     return () => clearInterval(interval);
@@ -1075,13 +1082,13 @@ export function Dashboard({
                 <colgroup>
                   <col style={{ width: "48px" }} />
                   <col style={{ width: "140px" }} />
-                  <col style={{ width: "270px" }} />
+                  <col style={{ width: "300px" }} />
                   <col style={{ width: "130px" }} />
                   <col style={{ width: "auto" }} />
                   <col style={{ width: "150px" }} />
                   <col style={{ width: "195px" }} />
                   <col style={{ width: "120px" }} />
-                  <col style={{ width: "130px" }} />
+                  <col style={{ width: "175px" }} />
                 </colgroup>
                 <thead className="sticky top-0 z-10 border-b border-line bg-paper/80 backdrop-blur text-muted">
                   <tr>
@@ -1119,7 +1126,36 @@ export function Dashboard({
                             </span>
                           </td>
                           <td className="p-2.5 font-bold font-mono text-ink whitespace-nowrap tracking-tight">
-                            {r.refNo}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span>{r.refNo}</span>
+                              {hasScancopySync(r.refNo) ? (
+                                <button
+                                  type="button"
+                                  title="View closed signed scancopy PDF"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setScancopyRecord(r);
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 px-1.5 py-0.5 text-[10px] font-bold hover:bg-rose-500 hover:text-white transition shadow-2xs cursor-pointer"
+                                >
+                                  <FileCheck2 className="h-3 w-3" />
+                                  <span>Scancopy</span>
+                                </button>
+                              ) : r.state === "closed" || (r.status || "").toLowerCase().includes("closed") ? (
+                                <button
+                                  type="button"
+                                  title="Upload closed signed scancopy PDF"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setScancopyRecord(r);
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded border border-dashed border-rose-400/50 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 text-[10px] font-medium hover:bg-rose-500/10 transition cursor-pointer"
+                                >
+                                  <Plus className="h-2.5 w-2.5" />
+                                  <span>Scancopy</span>
+                                </button>
+                              ) : null}
+                            </div>
                           </td>
                           <td className="p-2.5 text-muted font-mono text-[11px] whitespace-nowrap">
                             {r.accRef || "—"}
@@ -1155,18 +1191,36 @@ export function Dashboard({
                             )}
                           </td>
                           <td className="p-2.5 text-center whitespace-nowrap">
-                            <button
-                              type="button"
-                              title="Edit record details and live preview official form"
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent hover:border-accent hover:bg-accent hover:text-white transition shadow-2xs cursor-pointer whitespace-nowrap"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditRecord(r);
-                              }}
-                            >
-                              <FileEdit className="h-3.5 w-3.5" />
-                              <span>Edit Form</span>
-                            </button>
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                title="Edit record details and live preview official form"
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-2 py-1 text-xs font-semibold text-accent hover:border-accent hover:bg-accent hover:text-white transition shadow-2xs cursor-pointer whitespace-nowrap"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEditRecord(r);
+                                }}
+                              >
+                                <FileEdit className="h-3.5 w-3.5" />
+                                <span>Edit</span>
+                              </button>
+                              <button
+                                type="button"
+                                title={hasScancopySync(r.refNo) ? "Preview signed scancopy PDF" : "Attach signed scancopy PDF"}
+                                className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
+                                  hasScancopySync(r.refNo)
+                                    ? "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-600 hover:text-white shadow-2xs"
+                                    : "border-line bg-paper/60 text-muted hover:border-accent hover:text-accent"
+                                }`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setScancopyRecord(r);
+                                }}
+                              >
+                                <FileText className="h-3.5 w-3.5 text-rose-500" />
+                                <span>{hasScancopySync(r.refNo) ? "Scancopy" : "+ PDF"}</span>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -1348,6 +1402,20 @@ export function Dashboard({
         dsr={printDsrRecord}
         monthlyData={monthlyPrintData}
         compiledReport={compiledReportData}
+      />
+
+      {/* Closed Scancopy PDF Viewer & Upload Modal */}
+      <ScancopyViewerModal
+        open={Boolean(scancopyRecord)}
+        onClose={() => setScancopyRecord(null)}
+        refNo={scancopyRecord?.refNo || ""}
+        recordId={scancopyRecord?.id || ""}
+        title={scancopyRecord?.title || ""}
+        category={scancopyRecord?.category || ""}
+        subcategory={scancopyRecord?.subcategory || ""}
+        status={scancopyRecord?.status || "Closed"}
+        userName={currentUser.name}
+        onScancopyChanged={() => setScancopyVersion((v) => v + 1)}
       />
 
       {/* Feedback Toast Notification */}
