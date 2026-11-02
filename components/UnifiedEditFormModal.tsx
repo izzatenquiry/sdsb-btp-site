@@ -905,12 +905,7 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
               }`}
             >
               <FileCheck2 className="h-3.5 w-3.5 text-rose-400" />
-              <span>{previewMode === "scancopy" ? "Live Form Sheet" : "Preview Scancopy"}</span>
-              {scancopyMeta && (
-                <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${previewMode === "scancopy" ? "bg-white text-rose-700" : "bg-rose-500 text-white"}`}>
-                  PDF
-                </span>
-              )}
+              <span>{previewMode === "scancopy" ? "Live Form (Open)" : "Scancopy (Closed)"}</span>
             </button>
 
             {/* Print button (desktop only) */}
@@ -1384,35 +1379,26 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
                 <button
                   type="button"
                   onClick={() => setPreviewMode("form")}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer whitespace-nowrap shrink-0 ${
                     previewMode === "form"
                       ? "bg-white dark:bg-slate-700 text-accent shadow-xs"
                       : "text-muted hover:text-ink"
                   }`}
                 >
                   <Eye className="h-3.5 w-3.5" />
-                  <span>1. Live Form Sheet</span>
+                  <span>1. Live Form (Open)</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setPreviewMode("scancopy")}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer whitespace-nowrap shrink-0 ${
                     previewMode === "scancopy"
                       ? "bg-rose-600 text-white shadow-xs"
                       : "text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
                   }`}
                 >
                   <FileCheck2 className="h-3.5 w-3.5" />
-                  <span>2. Signed Scancopy (PDF)</span>
-                  {scancopyMeta ? (
-                    <span className="rounded-full bg-emerald-500 text-white text-[9px] px-1.5 py-0.2 font-bold">
-                      Attached
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-300 text-[9px] px-1.5 py-0.2">
-                      Upload
-                    </span>
-                  )}
+                  <span>2. Scancopy (Closed)</span>
                 </button>
               </div>
 
