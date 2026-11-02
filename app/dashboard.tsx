@@ -27,6 +27,7 @@ import {
   UserCheck,
   Users,
   FileEdit,
+  ChevronDown,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PageHeader, toolbarControlClass } from "@/components/PageHeader";
@@ -971,18 +972,31 @@ export function Dashboard({
         />
       ) : (
         /* ================= 22 REGISTERS (EXCEL VIEW) ================= */
-        <div className="flex flex-col gap-4">
-          <PageHeader
-            title="22 QAQC Registers"
-            description={`Viewing: ${categoryFilter} ${selectedSubcategory !== "ALL" ? `➔ ${selectedSubcategory}` : `(${availableSubcategories.length} Registers)`} (${filteredRegisters.length} rows)`}
-            actions={
-              <div className="flex w-full flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-end gap-2">
-                {/* 1. Category Filter Dropdown (Inspection, Submission, Test) */}
-                <div className="flex items-center gap-1.5 w-full sm:w-auto">
-                  <span className="text-[11px] font-bold text-muted uppercase tracking-wider hidden md:inline">Category:</span>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2.5 sm:gap-3">
+            {/* Sebaris Title & Counter on Mobile / Desktop */}
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <h1 className="display text-lg sm:text-2xl font-bold uppercase tracking-tight text-ink truncate">
+                  22 QAQC Registers
+                </h1>
+                <span className="rounded-full bg-accent/15 border border-accent/25 px-2 py-0.5 text-[10px] sm:text-xs font-bold text-accent shrink-0">
+                  {filteredRegisters.length} rows
+                </span>
+              </div>
+              <span className="text-[11px] sm:text-xs text-muted truncate text-right">
+                {categoryFilter} {selectedSubcategory !== "ALL" ? `· ${selectedSubcategory}` : `(${availableSubcategories.length})`}
+              </span>
+            </div>
+
+            {/* Filter Controls - Clean & Space-Efficient Grid on Mobile */}
+            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-2">
+              {/* Row 1 on Mobile: Category & Sub-Register (50 / 50 sama ratio) */}
+              <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto">
+                <div className="relative min-w-0">
                   <select
                     aria-label="Filter Category"
-                    className="form-control h-10 w-full sm:w-44 shrink-0 rounded-lg border border-line bg-field px-2.5 text-xs font-semibold text-ink"
+                    className="form-control h-9 w-full sm:w-44 truncate rounded-lg border border-line bg-field pl-2.5 pr-7 text-xs font-semibold text-ink appearance-none cursor-pointer shadow-2xs"
                     value={categoryFilter}
                     onChange={(e) => {
                       const newCat = e.target.value as RegisterCategory;
@@ -997,14 +1011,13 @@ export function Dashboard({
                       </option>
                     ))}
                   </select>
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
                 </div>
 
-                {/* 2. Sub-Register Filter Dropdown (Cascaded by Category) */}
-                <div className="flex items-center gap-1.5 w-full sm:w-auto">
-                  <span className="text-[11px] font-bold text-muted uppercase tracking-wider hidden md:inline">Sub:</span>
+                <div className="relative min-w-0">
                   <select
                     aria-label="Select Sub-Register"
-                    className="form-control h-10 w-full sm:w-60 shrink-0 truncate rounded-lg border border-line bg-field px-2.5 text-xs font-semibold text-ink"
+                    className="form-control h-9 w-full sm:w-56 truncate rounded-lg border border-line bg-field pl-2.5 pr-7 text-xs font-semibold text-ink appearance-none cursor-pointer shadow-2xs"
                     value={selectedSubcategory}
                     onChange={(e) => {
                       setSelectedSubcategory(e.target.value);
@@ -1022,78 +1035,85 @@ export function Dashboard({
                       );
                     })}
                   </select>
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Row 2 on Mobile: Status & Search (Compact on Mobile) */}
+              <div className="grid grid-cols-1 sm:flex sm:w-auto gap-2 w-full sm:items-center">
+                {/* Status Dropdown */}
+                <div className="relative min-w-0 sm:w-48">
+                  <select
+                    aria-label="Filter Status"
+                    className="form-control h-9 w-full truncate rounded-lg border border-line bg-field pl-2.5 pr-7 text-xs font-semibold text-ink appearance-none cursor-pointer shadow-2xs"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <option value="all">
+                      All Statuses ({rows.filter((r) => {
+                        const regCat = registerByName.get(r.subcategory)?.category || r.category;
+                        if (regCat !== categoryFilter) return false;
+                        if (selectedSubcategory !== "ALL" && r.subcategory !== selectedSubcategory) return false;
+                        return true;
+                      }).length})
+                    </option>
+
+                    {availableStatuses.length > 0 && (
+                      <optgroup label="── ACTUAL REGISTER STATUSES ──">
+                        {availableStatuses.map(([stName, count]) => (
+                          <option key={stName} value={`exact:${stName}`}>
+                            {stName} ({count})
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+
+                    <optgroup label="── SLA & TARGET TIMELINE ──">
+                      <option value="sla:open">All Open / Pending</option>
+                      <option value="sla:closed">All Closed / Passed</option>
+                      <option value="sla:overdue">Dated Overdue</option>
+                      <option value="sla:due-soon">Due in 7 Days</option>
+                    </optgroup>
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
                 </div>
 
-                {/* 3. Status Filter (Dynamic & Tally with Actual Register Statuses) */}
-                <select
-                  aria-label="Filter Status"
-                  className="form-control h-10 w-full sm:w-48 shrink-0 truncate rounded-lg border border-line bg-field px-2.5 text-xs font-semibold text-ink"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                  <option value="all">
-                    All Statuses ({rows.filter((r) => {
-                      const regCat = registerByName.get(r.subcategory)?.category || r.category;
-                      if (regCat !== categoryFilter) return false;
-                      if (selectedSubcategory !== "ALL" && r.subcategory !== selectedSubcategory) return false;
-                      return true;
-                    }).length})
-                  </option>
-
-                  {availableStatuses.length > 0 && (
-                    <optgroup label="── ACTUAL REGISTER STATUSES ──">
-                      {availableStatuses.map(([stName, count]) => (
-                        <option key={stName} value={`exact:${stName}`}>
-                          {stName} ({count})
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-
-                  <optgroup label="── SLA & TARGET TIMELINE ──">
-                    <option value="sla:open">All Open / Pending</option>
-                    <option value="sla:closed">All Closed / Passed</option>
-                    <option value="sla:overdue">Dated Overdue</option>
-                    <option value="sla:due-soon">Due in 7 Days</option>
-                  </optgroup>
-                </select>
-
                 {/* Search Box */}
-                <div className="relative w-full sm:flex-1 sm:min-w-[180px] sm:max-w-xs">
-                  <Search className="absolute left-2.5 top-3 h-4 w-4 text-muted" />
+                <div className="relative min-w-0 flex-1 sm:w-52">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted pointer-events-none" />
                   <input
                     type="text"
                     placeholder="Search ref, title, block..."
-                    className="form-control h-10 w-full rounded-lg border border-line bg-field pl-8 pr-3 text-xs text-ink placeholder:text-muted"
+                    className="form-control h-9 w-full rounded-lg border border-line bg-field pl-8 pr-3 text-xs text-ink placeholder:text-muted/60 shadow-2xs focus:border-accent focus:outline-none"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-
-                {/* Export & Add Record Buttons */}
-                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                  <button
-                    type="button"
-                    onClick={exportCSV}
-                    className="inline-flex h-10 flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg border border-line bg-field px-3 text-xs font-semibold text-ink hover:border-accent hover:text-accent cursor-pointer"
-                    title="Export filtered records to CSV"
-                  >
-                    <ArrowDownToLine className="h-4 w-4" />
-                    <span>Export</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={openNewRecord}
-                    className="inline-flex h-10 flex-1 sm:flex-none items-center justify-center gap-1.5 rounded-lg bg-accent px-3 text-xs font-semibold text-white shadow hover:brightness-110 cursor-pointer"
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span>Record</span>
-                  </button>
-                </div>
               </div>
-            }
-          />
+
+              {/* Row 3 on Mobile: Export & Add Record Buttons (50 / 50 sama ratio) */}
+              <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:items-center">
+                <button
+                  type="button"
+                  onClick={exportCSV}
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-line bg-field px-3 text-xs font-semibold text-ink hover:border-accent hover:text-accent cursor-pointer shadow-2xs transition"
+                  title="Export filtered records to CSV"
+                >
+                  <ArrowDownToLine className="h-3.5 w-3.5" />
+                  <span>Export</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={openNewRecord}
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-accent px-3 text-xs font-semibold text-white shadow-xs hover:brightness-110 cursor-pointer transition"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Record</span>
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* Data Table / Spreadsheet View */}
           <div className="overflow-hidden rounded-xl border border-line bg-paper-elevated shadow-sm">

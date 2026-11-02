@@ -111,7 +111,7 @@ export function AppShell({
               onClick={() => onSelectSection("Overview")}
               className="group block min-w-0 text-left w-full"
             >
-              <p className="display truncate text-base sm:text-lg font-semibold tracking-wide text-header-fg transition group-hover:text-accent-bright">
+              <p className="display truncate text-[13px] sm:text-base font-bold tracking-tight text-header-fg transition group-hover:text-accent-bright leading-tight">
                 BANTING TECHNOLOGY PARK (BTP)
               </p>
             </button>
