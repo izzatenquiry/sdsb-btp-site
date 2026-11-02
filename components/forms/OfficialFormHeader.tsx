@@ -50,14 +50,14 @@ export function OfficialFormHeader({
                     <img
                       src="/logo/TURNER.png"
                       alt="Turner"
-                      className="h-5 sm:h-5.5 max-w-[80px] w-auto object-contain mx-auto block"
+                      className="h-7 sm:h-8 max-w-[100px] w-auto object-contain mx-auto block"
                     />
                   </td>
                   <td className="w-1/2 p-0.5 text-center align-middle border-0">
                     <img
                       src="/logo/DAYONE.png"
                       alt="DayOne"
-                      className="h-6 sm:h-6.5 max-w-[85px] w-auto object-contain mx-auto block"
+                      className="h-7 sm:h-8 max-w-[100px] w-auto object-contain mx-auto block"
                     />
                   </td>
                 </tr>

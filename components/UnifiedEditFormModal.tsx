@@ -626,8 +626,6 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         allowTaint: true,
         logging: false,
         backgroundColor: "#ffffff",
-        windowWidth: 794,
-        windowHeight: 1123,
         scrollX: 0,
         scrollY: 0,
         onclone: (clonedDoc, clonedEl) => {
@@ -669,6 +667,28 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             `;
             clonedDoc.head.appendChild(style);
 
+            // Replace native checkboxes with high-fidelity visual checkmarks that html2canvas renders identically
+            clonedDoc.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+              const isChecked = (input as HTMLInputElement).checked;
+              const box = clonedDoc.createElement("span");
+              box.style.display = "inline-flex";
+              box.style.alignItems = "center";
+              box.style.justifyContent = "center";
+              box.style.width = "13px";
+              box.style.height = "13px";
+              box.style.borderRadius = "2px";
+              box.style.marginRight = "4px";
+              box.style.verticalAlign = "middle";
+              box.style.border = isChecked ? "1.5px solid #2563eb" : "1.5px solid #94a3b8";
+              box.style.backgroundColor = isChecked ? "#2563eb" : "#ffffff";
+              box.style.color = "#ffffff";
+              box.style.fontSize = "9px";
+              box.style.fontWeight = "bold";
+              box.style.lineHeight = "1";
+              box.innerHTML = isChecked ? "&#10003;" : "";
+              input.parentNode?.replaceChild(box, input);
+            });
+
             // Convert any computed oklch colors across elements to rgb
             try {
               const allEls = targetEl.querySelectorAll("*");
@@ -701,26 +721,16 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             clonedDoc.body.style.margin = "0";
             clonedDoc.body.style.padding = "0";
             clonedDoc.body.style.background = "#ffffff";
-            clonedDoc.body.style.overflow = "hidden";
-            clonedDoc.body.style.width = "794px";
-            clonedDoc.body.style.height = "1123px";
+            clonedDoc.body.style.overflow = "visible";
 
-            // Enforce exact 1:1 A4 sheet dimensions matching the screen preview
+            // Keep targetEl exactly as in screen preview
             targetEl.style.position = "static";
-            targetEl.style.margin = "0";
+            targetEl.style.margin = "0 auto";
             targetEl.style.boxSizing = "border-box";
-            targetEl.style.width = "794px";
-            targetEl.style.maxWidth = "794px";
-            targetEl.style.height = "1123px";
-            targetEl.style.minHeight = "1123px";
-            targetEl.style.maxHeight = "1123px";
-            targetEl.style.padding = "24px 28px";
+            targetEl.style.width = "800px";
+            targetEl.style.maxWidth = "800px";
             targetEl.style.boxShadow = "none";
             targetEl.style.border = "none";
-            targetEl.style.display = "flex";
-            targetEl.style.flexDirection = "column";
-            targetEl.style.justifyContent = "space-between";
-            targetEl.style.overflow = "hidden";
             targetEl.style.visibility = "visible";
             targetEl.style.opacity = "1";
 
@@ -738,8 +748,20 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         compress: true,
       });
 
-      // Exact 1:1 Full Page A4 fit (0,0 to 210mm x 297mm)
-      pdf.addImage(imgData, "PNG", 0, 0, 210, 297, undefined, "FAST");
+      // Fit preview proportionally onto 1 page A4
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 5;
+      const maxW = pageWidth - margin * 2; // 200mm
+      const maxH = pageHeight - margin * 2; // 287mm
+
+      const scale = Math.min(maxW / rawCanvas.width, maxH / rawCanvas.height);
+      const pdfW = rawCanvas.width * scale;
+      const pdfH = rawCanvas.height * scale;
+      const posX = (pageWidth - pdfW) / 2;
+      const posY = (pageHeight - pdfH) / 2;
+
+      pdf.addImage(imgData, "PNG", posX, posY, pdfW, pdfH, undefined, "FAST");
 
       // Safe filename without invalid characters like / or :
       const safeRef = String(form.refNo || currentTemplate.docNo || "Form")
@@ -1380,10 +1402,7 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
               <div
                 id="printable-form-sheet"
                 ref={printAreaRef}
-                className="w-full max-w-[794px] min-h-[1123px] bg-white text-slate-900 shadow-2xl rounded-sm p-6 sm:p-7 border border-slate-300 dark:border-slate-800 transition-all font-sans leading-normal self-start flex flex-col justify-between"
-                style={{
-                  boxSizing: "border-box",
-                }}
+                className="w-full max-w-[820px] bg-white text-slate-900 shadow-2xl rounded-sm p-6 sm:p-8 border border-slate-300 dark:border-slate-800 transition-all font-sans leading-normal self-start"
               >
                 {selectedTemplateId === "rfwi" && (
                   <RfwiSheet formData={liveFormData} setFormData={setSheetFields} />

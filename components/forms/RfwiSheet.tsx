@@ -27,7 +27,7 @@ export function RfwiSheet({
   }
 
   return (
-    <div className="w-full flex-1 flex flex-col justify-between font-sans leading-tight space-y-2">
+    <div className="space-y-2.5 sm:space-y-3 font-sans leading-tight">
       <OfficialFormHeader
         title="REQUEST FOR WORK INSPECTION (RFWI) FORM"
         projectName={formData.projectName || "SDSB · BANTING TECHNOLOGY PARK (BTP)"}
@@ -274,7 +274,7 @@ export function RfwiSheet({
             <tr className="border-b border-black">
               <td className="py-1 px-2.5" colSpan={4}>
                 <div className="font-bold text-[9.5px] text-slate-700 mb-0.5">Inspection Comments / Required Action:</div>
-                <div className="min-h-12 border border-slate-300 p-1.5 text-[11px] bg-white rounded">
+                <div className="min-h-16 border border-slate-300 p-2 text-xs bg-white rounded">
                   {formData.inspectionComments || ""}
                 </div>
               </td>
@@ -289,7 +289,7 @@ export function RfwiSheet({
                   <div><strong>Position:</strong> Resident Engineer / Inspector (C&S)</div>
                   <div><strong>Company:</strong> Supervising Consultant</div>
                   <div className="mt-2 pt-1 border-t border-dashed border-slate-400">
-                    <div className="h-14" />
+                    <div className="h-16" />
                     <div>
                       <strong>Signature & Date:</strong> ____________________________
                     </div>
@@ -305,7 +305,7 @@ export function RfwiSheet({
                   <div><strong>Position:</strong> PMC Quality Director / Lead</div>
                   <div><strong>Company:</strong> PMC / DayOne</div>
                   <div className="mt-2 pt-1 border-t border-dashed border-slate-400">
-                    <div className="h-14" />
+                    <div className="h-16" />
                     <div>
                       <strong>Signature & Date:</strong> ____________________________
                     </div>
@@ -317,7 +317,7 @@ export function RfwiSheet({
         </table>
       </div>
 
-      <div className="text-[9.5px] text-slate-500 text-center pt-1.5">
+      <div className="text-[9.5px] text-slate-500 text-center pt-2 pb-1">
         BTP Governance Control Standard · All records are controlled and synchronized into Autodesk Construction Cloud (ACC).
       </div>
     </div>
