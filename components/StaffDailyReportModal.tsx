@@ -303,61 +303,76 @@ export function StaffDailyReportModal({
 
       {/* Body */}
       <div className={`${MODAL_BODY_CLASS} p-4 sm:p-5 space-y-4`}>
-        {/* Top Control Bar: Month Switcher & Direct Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-paper/60 p-3 shadow-sm">
-          {/* Month Navigation */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={prevMonth}
-              title="Previous Month"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-paper text-ink transition hover:border-accent hover:text-accent cursor-pointer"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <h4 className="min-w-[10rem] text-center text-sm font-bold text-ink sm:min-w-[12rem] sm:text-base">
-              {monthLabel}
-            </h4>
-            <button
-              type="button"
-              onClick={nextMonth}
-              title="Next Month"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-paper text-ink transition hover:border-accent hover:text-accent cursor-pointer"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
+        {/* Top Control Bar: Month Switcher & Direct Actions (3 Rows) */}
+        <div className="flex flex-col gap-2.5 rounded-xl border border-line bg-paper/60 p-3 shadow-sm">
+          {/* Row 1: Month | Today */}
+          <div className="flex items-center justify-between gap-2 w-full">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-1 sm:flex-initial justify-between sm:justify-start">
+              <button
+                type="button"
+                onClick={prevMonth}
+                title="Previous Month"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-paper text-ink transition hover:border-accent hover:text-accent cursor-pointer shrink-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <h4 className="flex-1 sm:min-w-[11rem] text-center text-sm sm:text-base font-bold text-ink whitespace-nowrap">
+                {monthLabel}
+              </h4>
+              <button
+                type="button"
+                onClick={nextMonth}
+                title="Next Month"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-paper text-ink transition hover:border-accent hover:text-accent cursor-pointer shrink-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
             <button
               type="button"
               onClick={jumpToToday}
-              className="ml-1 rounded-lg border border-line bg-paper px-2.5 py-1 text-xs font-semibold text-muted hover:border-accent hover:text-ink transition cursor-pointer"
+              className="rounded-lg border border-line bg-paper px-3 py-1.5 text-xs font-semibold text-ink hover:border-accent hover:text-accent transition cursor-pointer shrink-0 shadow-2xs"
             >
               Today
             </button>
           </div>
 
-          {/* Quick Metrics & Actions */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-2 text-xs font-semibold text-muted bg-paper-elevated px-3 py-1.5 rounded-lg border border-line">
-              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                {monthStats.logged} / {monthStats.daysInMonth} Days Logged
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold">
-                <FileText className="h-3.5 w-3.5" />
-                {monthStats.dsrCount} DSRs Attached
-              </span>
-            </div>
+          {/* Row 2: Status Pill (Kekal tapi Full Width) */}
+          <div className="w-full flex items-center justify-center gap-2 text-xs font-semibold text-muted bg-paper-elevated px-3 py-1.5 rounded-lg border border-line text-center shadow-2xs">
+            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold whitespace-nowrap">
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+              {monthStats.logged} / {monthStats.daysInMonth} Days Logged
+            </span>
+            <span className="opacity-40">•</span>
+            <span className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-bold whitespace-nowrap">
+              <FileText className="h-3.5 w-3.5 shrink-0" />
+              {monthStats.dsrCount} DSRs Attached
+            </span>
+          </div>
+
+          {/* Row 3: + New DSR | Monthly | Compile WPR / MPR */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full">
+            {onOpenCreateDsr && (
+              <button
+                type="button"
+                onClick={() => onOpenCreateDsr(selectedDate)}
+                className="inline-flex items-center justify-center gap-1 rounded-lg bg-accent px-1.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-bold text-white shadow-xs hover:brightness-110 active:scale-95 transition cursor-pointer text-center whitespace-nowrap"
+                title="Create New DSR for Selected Date"
+              >
+                <Plus className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">New DSR</span>
+              </button>
+            )}
 
             {onPrintMonthlyReport && (
               <button
                 type="button"
                 onClick={() => onPrintMonthlyReport(currentYear, currentMonth)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-paper px-3 py-1.5 text-xs font-bold text-ink hover:border-accent hover:text-accent transition shadow-xs cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 rounded-lg border border-line bg-paper px-1.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-bold text-ink hover:border-accent hover:text-accent transition shadow-2xs cursor-pointer text-center whitespace-nowrap"
                 title="Print Monthly Activity Sheet"
               >
-                <Printer className="h-3.5 w-3.5 text-accent" />
-                <span>Monthly PDF</span>
+                <Printer className="h-3.5 w-3.5 text-accent shrink-0" />
+                <span className="truncate">Monthly</span>
               </button>
             )}
 
@@ -365,22 +380,11 @@ export function StaffDailyReportModal({
               <button
                 type="button"
                 onClick={onOpenCompile}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-paper px-3 py-1.5 text-xs font-bold text-ink hover:border-accent hover:text-accent transition shadow-xs cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 rounded-lg border border-line bg-paper px-1.5 sm:px-3 py-1.5 text-[10.5px] sm:text-xs font-bold text-ink hover:border-accent hover:text-accent transition shadow-2xs cursor-pointer text-center whitespace-nowrap"
                 title="Compile Weekly or Monthly Progress Report"
               >
-                <FileSpreadsheet className="h-3.5 w-3.5 text-teal-600" />
-                <span>Compile WPR / MPR</span>
-              </button>
-            )}
-
-            {onOpenCreateDsr && (
-              <button
-                type="button"
-                onClick={() => onOpenCreateDsr(selectedDate)}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:brightness-110 active:scale-95 transition cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>+ New DSR</span>
+                <FileSpreadsheet className="h-3.5 w-3.5 text-teal-600 shrink-0" />
+                <span className="truncate">Compile WPR / MPR</span>
               </button>
             )}
           </div>
