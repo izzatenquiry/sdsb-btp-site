@@ -105,18 +105,30 @@ export function AppShell({
       <header className="sticky top-0 z-[60] shrink-0 border-b border-white/10 bg-navy text-header-fg shadow-lg shadow-black/30">
         {/* Mobile Header */}
         <div className="flex w-full flex-nowrap items-center justify-between gap-2 px-4 py-2 sm:px-6 xl:hidden">
-          <button
-            type="button"
-            onClick={() => onSelectSection("Overview")}
-            className="group min-w-0 flex-1 text-left"
-          >
-            <p className="display truncate text-lg font-semibold tracking-wide text-header-fg transition group-hover:text-accent-bright sm:text-xl">
-              SDSB · BTP DATA PARK
-            </p>
-            <p className="truncate text-[10px] text-slate-400">
-              QAQC Control Centre · {userName} ({userRole})
-            </p>
-          </button>
+          <div className="min-w-0 flex-1">
+            <button
+              type="button"
+              onClick={() => onSelectSection("Overview")}
+              className="group block min-w-0 text-left w-full"
+            >
+              <p className="display truncate text-base sm:text-lg font-semibold tracking-wide text-header-fg transition group-hover:text-accent-bright">
+                SDSB · BANTING TECHNOLOGY PARK (BTP)
+              </p>
+            </button>
+            <div className="flex items-center gap-1.5 truncate text-[10px] text-slate-300 mt-0.5">
+              <span>SDSB QAQC · Internal Control Centre</span>
+              <span className="text-slate-500">·</span>
+              <button
+                type="button"
+                onClick={onOpenProfile}
+                className="font-bold text-accent-bright underline-offset-2 hover:underline hover:text-white cursor-pointer truncate"
+                title={`View user profile (${userName})`}
+              >
+                {userName}
+              </button>
+              <span className="shrink-0 font-medium text-slate-300">({userRole})</span>
+            </div>
+          </div>
 
           <div className="flex shrink-0 items-center gap-1.5">
             <button
