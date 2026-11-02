@@ -112,12 +112,12 @@ export function AppShell({
               className="group block min-w-0 text-left w-full"
             >
               <p className="display truncate text-base sm:text-lg font-semibold tracking-wide text-header-fg transition group-hover:text-accent-bright">
-                SDSB · BANTING TECHNOLOGY PARK (BTP)
+                BANTING TECHNOLOGY PARK (BTP)
               </p>
             </button>
-            <div className="flex items-center gap-1.5 truncate text-[10px] text-slate-300 mt-0.5">
-              <span>SDSB QAQC · Internal Control Centre</span>
-              <span className="text-slate-500">·</span>
+            <div className="flex items-center gap-1.5 truncate text-[10px] sm:text-xs text-slate-300 mt-0.5">
+              <span>Internal QAQC SDSB</span>
+              <span className="text-slate-500">-</span>
               <button
                 type="button"
                 onClick={onOpenProfile}
@@ -126,7 +126,8 @@ export function AppShell({
               >
                 {userName}
               </button>
-              <span className="shrink-0 font-medium text-slate-300">({userRole})</span>
+              <span className="text-slate-500">-</span>
+              <span className="shrink-0 font-medium text-slate-300">{userRole}</span>
             </div>
           </div>
 
