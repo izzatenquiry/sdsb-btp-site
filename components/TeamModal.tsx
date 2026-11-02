@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CenteredModal,
   STANDARD_MODAL_PANEL_CLASS,
@@ -30,6 +30,10 @@ import {
   Sparkles,
   Search,
   User,
+  Move,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
 } from "lucide-react";
 import { getSavedStaffProfile, normalizeKey } from "@/lib/auth";
 
@@ -318,7 +322,83 @@ export function TeamModal({ open, onClose }: Props) {
     }
   }
 
+  // Touch / Pan interactive canvas state for Org Chart
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const isDragging = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const panStart = useRef({ x: 0, y: 0 });
+  const hasMoved = useRef(false);
+  const touchDistanceStart = useRef<number | null>(null);
+  const zoomStart = useRef(1);
+
+  useEffect(() => {
+    if (open) {
+      setPan({ x: 0, y: 0 });
+      setZoom(1);
+    }
+  }, [open, viewMode]);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0 && e.pointerType === "mouse") return;
+    isDragging.current = true;
+    hasMoved.current = false;
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    panStart.current = { ...pan };
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {}
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      hasMoved.current = true;
+    }
+    setPan({
+      x: panStart.current.x + dx,
+      y: panStart.current.y + dy,
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    isDragging.current = false;
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const d = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchDistanceStart.current = d;
+      zoomStart.current = zoom;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchDistanceStart.current !== null) {
+      const d = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const ratio = d / touchDistanceStart.current;
+      const newZoom = Math.min(1.5, Math.max(0.6, Number((zoomStart.current * ratio).toFixed(2))));
+      setZoom(newZoom);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    touchDistanceStart.current = null;
+  };
+
   function handleSelectStaff(member: TeamMember) {
+    if (hasMoved.current) return;
     setEditingMember(member);
     setEditName(member.name || "");
     setEditRole(member.role || "");
@@ -463,54 +543,27 @@ export function TeamModal({ open, onClose }: Props) {
       <div className={MODAL_ACCENT_CLASS} />
 
       {/* Top Header */}
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line bg-paper/60 px-4 py-2.5 sm:px-6">
-        <div className="flex items-center gap-2.5">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-tr from-accent to-teal-500 text-white font-bold shadow-xs">
-            <Network className="h-4 w-4" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 id="team-modal-title" className="text-sm font-extrabold text-ink">
-                Site QA/QC Organisation Chart
-              </h3>
-              <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 px-1.5 py-0.2 text-[9px] font-bold text-emerald-700 dark:text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live
-              </span>
+      <div className="shrink-0 border-b border-line bg-paper/80 px-4 py-3 sm:px-6 flex flex-col gap-2.5">
+        {/* Row 1: Title, Live indicator & Close Button */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-tr from-accent to-teal-500 text-white font-bold shadow-xs shrink-0">
+              <Network className="h-4 w-4" />
             </div>
-            <p className="text-[10.5px] text-muted">
-              Banting Technology Park · Site Quality Management Structure & Staff Directory
-            </p>
-          </div>
-        </div>
-
-        {/* View Switcher */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-paper/80 border border-line rounded-lg p-0.5 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => setViewMode("chart")}
-              className={`flex items-center gap-1 rounded-md px-2.5 py-0.5 text-xs font-bold transition cursor-pointer ${
-                viewMode === "chart"
-                  ? "bg-accent text-white shadow-xs"
-                  : "text-muted hover:text-ink hover:bg-field"
-              }`}
-            >
-              <Network className="h-3 w-3" />
-              <span>Org Chart</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("list")}
-              className={`flex items-center gap-1 rounded-md px-2.5 py-0.5 text-xs font-bold transition cursor-pointer ${
-                viewMode === "list"
-                  ? "bg-accent text-white shadow-xs"
-                  : "text-muted hover:text-ink hover:bg-field"
-              }`}
-            >
-              <ListFilter className="h-3 w-3" />
-              <span>Directory ({members.length})</span>
-            </button>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 id="team-modal-title" className="text-sm sm:text-base font-bold text-ink truncate tracking-tight">
+                  Site QA/QC Organisation Chart
+                </h3>
+                <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 px-1.5 py-0.2 text-[9px] font-bold text-emerald-700 dark:text-emerald-400 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Live
+                </span>
+              </div>
+              <p className="text-[10.5px] sm:text-xs text-muted truncate mt-0.5">
+                Banting Technology Park · Site Quality Management Structure & Staff Directory
+              </p>
+            </div>
           </div>
 
           <button
@@ -522,21 +575,111 @@ export function TeamModal({ open, onClose }: Props) {
             ✕
           </button>
         </div>
+
+        {/* Row 2: View Switcher - Full Width, Sama Ratio (50/50) */}
+        <div className="grid grid-cols-2 gap-1.5 p-1 bg-field/70 border border-line rounded-xl w-full text-xs font-bold shadow-2xs">
+          <button
+            type="button"
+            onClick={() => setViewMode("chart")}
+            className={`flex items-center justify-center gap-1.5 py-2 rounded-lg transition cursor-pointer text-center ${
+              viewMode === "chart"
+                ? "bg-accent text-white shadow-xs"
+                : "text-muted hover:text-ink hover:bg-paper/50"
+            }`}
+          >
+            <Network className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Org Chart</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setViewMode("list")}
+            className={`flex items-center justify-center gap-1.5 py-2 rounded-lg transition cursor-pointer text-center ${
+              viewMode === "list"
+                ? "bg-accent text-white shadow-xs"
+                : "text-muted hover:text-ink hover:bg-paper/50"
+            }`}
+          >
+            <ListFilter className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Directory ({members.length})</span>
+          </button>
+        </div>
       </div>
 
       {/* Toast Alert */}
       {toastMsg && (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-50 rounded-full bg-emerald-600 px-3.5 py-1 text-xs font-bold text-white shadow-xl flex items-center gap-1.5 animate-in fade-in slide-in-from-top-2">
+        <div className="absolute top-24 left-1/2 -translate-x-1/2 z-50 rounded-full bg-emerald-600 px-3.5 py-1 text-xs font-bold text-white shadow-xl flex items-center gap-1.5 animate-in fade-in slide-in-from-top-2">
           <Check className="h-3 w-3" />
           <span>{toastMsg}</span>
         </div>
       )}
 
-      {/* Main Modal Body (Fitted View Without Scrolling) */}
-      <div className="min-h-0 flex-1 overflow-y-auto lg:overflow-y-hidden overflow-x-auto bg-paper/40 p-2 sm:p-2.5 select-none flex flex-col justify-center items-center">
-        {viewMode === "chart" ? (
-          /* ================= SLEEK & FITTED ORG CHART WITH CLEAN ORTHOGONAL BUSES ================= */
-          <div className="min-w-[800px] max-w-[820px] mx-auto flex flex-col items-center justify-center my-auto">
+      {/* Main Modal Body */}
+      {viewMode === "chart" ? (
+        /* Touch / Drag Pan Canvas for Org Chart */
+        <div
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="relative min-h-0 flex-1 overflow-hidden bg-slate-100/60 dark:bg-slate-950/60 select-none flex items-center justify-center cursor-grab active:cursor-grabbing touch-none w-full"
+        >
+          {/* Floating Pan & Zoom Controls */}
+          <div className="absolute bottom-3 right-3 z-30 flex items-center gap-1 bg-paper/95 backdrop-blur-md border border-line rounded-xl p-1 shadow-lg text-xs">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setZoom((z) => Math.min(1.4, Number((z + 0.1).toFixed(1))));
+              }}
+              className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:text-ink hover:bg-field transition cursor-pointer"
+              title="Zoom In"
+            >
+              <ZoomIn className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setZoom((z) => Math.max(0.6, Number((z - 0.1).toFixed(1))));
+              }}
+              className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:text-ink hover:bg-field transition cursor-pointer"
+              title="Zoom Out"
+            >
+              <ZoomOut className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPan({ x: 0, y: 0 });
+                setZoom(1);
+              }}
+              className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:text-ink hover:bg-field transition cursor-pointer"
+              title="Reset View"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+            </button>
+          </div>
+
+          {/* Interactive Hint Pill on Top Left */}
+          <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none flex items-center gap-1.5 rounded-full bg-paper/85 backdrop-blur-sm border border-line px-2.5 py-1 text-[10px] font-semibold text-muted shadow-2xs">
+            <Move className="h-3 w-3 text-accent" />
+            <span>Touch anywhere to drag chart</span>
+          </div>
+
+          {/* Movable Canvas */}
+          <div
+            style={{
+              transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`,
+              transformOrigin: "center center",
+              transition: isDragging.current ? "none" : "transform 0.1s ease-out",
+            }}
+            className="min-w-[800px] max-w-[820px] mx-auto flex flex-col items-center justify-center pointer-events-auto shrink-0 py-6"
+          >
             {/* Chart Banner */}
             <div className="flex items-center justify-center gap-2 mb-1 shrink-0">
               <span className="rounded bg-purple-500/10 border border-purple-500/20 px-2.5 py-0.5 text-[9.5px] font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider">
@@ -741,8 +884,10 @@ export function TeamModal({ open, onClose }: Props) {
               </div>
             </div>
           </div>
-        ) : (
-          /* ================= DIRECTORY LIST VIEW ================= */
+        </div>
+      ) : (
+        /* ================= DIRECTORY LIST VIEW ================= */
+        <div className="min-h-0 flex-1 overflow-y-auto bg-paper/40 p-3 sm:p-5">
           <div className="max-w-4xl mx-auto space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-2">
               <div>
@@ -990,8 +1135,8 @@ export function TeamModal({ open, onClose }: Props) {
               })}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ================= EDIT / ADD EMAIL DIALOG ================= */}
       {editingMember && (
