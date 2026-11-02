@@ -153,7 +153,7 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
   return (
     <div className="flex flex-col h-full min-h-0 rounded-2xl border border-line bg-paper-elevated shadow-sm overflow-hidden text-ink">
       {/* 1. Header KLC Style */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-3.5 py-3 border-b border-line bg-paper/50 shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-3.5 py-3 border-b border-line bg-paper/50 shrink-0">
         <div className="flex items-center gap-3">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent/15 text-accent shadow-xs">
             <CalendarIcon className="h-5 w-5" />
@@ -168,72 +168,79 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Month control */}
-          <div className="flex items-center rounded-lg border border-line bg-paper px-1 py-0.5 shadow-xs">
-            <span className="px-2 text-xs font-bold text-ink whitespace-nowrap">
-              {monthLabel}
-            </span>
-            <div className="flex items-center border-l border-line pl-1">
-              <button
-                type="button"
-                onClick={() => shiftMonth(-1)}
-                className="grid h-6 w-6 place-items-center rounded hover:bg-field text-muted hover:text-ink cursor-pointer"
-                title="Previous Month"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => shiftMonth(1)}
-                className="grid h-6 w-6 place-items-center rounded hover:bg-field text-muted hover:text-ink cursor-pointer"
-                title="Next Month"
-              >
-                <ChevronRight className="h-3.5 w-3.5" />
-              </button>
+        {/* Controls: Atas (Month | Today) & Bawah (+ New DSR | + New Register) on mobile */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+          {/* Atas: Month | Today */}
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+            {/* Month control */}
+            <div className="flex items-center justify-between sm:justify-start flex-1 sm:flex-initial rounded-lg border border-line bg-paper px-1 py-0.5 shadow-xs">
+              <span className="px-2 text-xs font-bold text-ink whitespace-nowrap">
+                {monthLabel}
+              </span>
+              <div className="flex items-center border-l border-line pl-1">
+                <button
+                  type="button"
+                  onClick={() => shiftMonth(-1)}
+                  className="grid h-6 w-6 place-items-center rounded hover:bg-field text-muted hover:text-ink cursor-pointer"
+                  title="Previous Month"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => shiftMonth(1)}
+                  className="grid h-6 w-6 place-items-center rounded hover:bg-field text-muted hover:text-ink cursor-pointer"
+                  title="Next Month"
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={goToday}
+              className="rounded-lg border border-line bg-paper px-3 py-1.5 sm:py-1 text-xs font-semibold text-ink shadow-xs hover:bg-field cursor-pointer shrink-0"
+            >
+              Today
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={goToday}
-            className="rounded-lg border border-line bg-paper px-2.5 py-1 text-xs font-semibold text-ink shadow-xs hover:bg-field cursor-pointer"
-          >
-            Today
-          </button>
+          {/* Bawah: + New DSR | + New Register */}
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+            {onOpenDsrCalendar && (
+              <button
+                type="button"
+                onClick={onOpenDsrCalendar}
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-teal-500/40 bg-teal-500/15 px-3 py-1.5 sm:py-1 text-xs font-bold text-teal-700 dark:text-teal-300 shadow-xs hover:bg-teal-500/25 transition cursor-pointer whitespace-nowrap"
+                title="Buka Kalendar DSR & Log Aktiviti Harian Staf"
+              >
+                <Plus className="h-3.5 w-3.5 text-accent" />
+                <span>+ New DSR</span>
+              </button>
+            )}
 
-          {onOpenDsrCalendar && (
-            <button
-              type="button"
-              onClick={onOpenDsrCalendar}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-teal-500/40 bg-teal-500/15 px-3 py-1 text-xs font-bold text-teal-700 dark:text-teal-300 shadow-xs hover:bg-teal-500/25 transition cursor-pointer"
-              title="Buka Kalendar DSR & Log Aktiviti Harian Staf"
-            >
-              <FileText className="h-3.5 w-3.5 text-accent" />
-              <span>Calendar DSR</span>
-            </button>
-          )}
-
-          {onOpenNewRecord && (
-            <button
-              type="button"
-              onClick={onOpenNewRecord}
-              className="inline-flex items-center gap-1 rounded-lg bg-accent px-3 py-1 text-xs font-bold text-white shadow-xs hover:bg-accent-bright transition cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>+ New Register</span>
-            </button>
-          )}
+            {onOpenNewRecord && (
+              <button
+                type="button"
+                onClick={onOpenNewRecord}
+                className="inline-flex items-center justify-center gap-1 rounded-lg bg-accent px-3 py-1.5 sm:py-1 text-xs font-bold text-white shadow-xs hover:bg-accent-bright transition cursor-pointer whitespace-nowrap"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>+ New Register</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* 2. Filter Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2 border-b border-line/60 bg-paper/20 text-xs shrink-0">
-        <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3.5 py-2 border-b border-line/60 bg-paper/20 text-xs shrink-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 shrink-0 max-w-full">
           <button
             type="button"
             onClick={() => setFilter("all")}
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition cursor-pointer shrink-0 whitespace-nowrap ${
               filter === "all"
                 ? "bg-accent text-white shadow-xs"
                 : "border border-line bg-paper/60 text-muted hover:text-ink"
@@ -246,7 +253,7 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
           <button
             type="button"
             onClick={() => setFilter("Submission")}
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition cursor-pointer shrink-0 whitespace-nowrap ${
               filter === "Submission"
                 ? "bg-sky-600 text-white shadow-xs"
                 : "border border-sky-200 bg-sky-50 text-sky-700 dark:bg-sky-950/30 dark:text-sky-300 hover:opacity-80"
@@ -259,7 +266,7 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
           <button
             type="button"
             onClick={() => setFilter("Inspection")}
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition cursor-pointer shrink-0 whitespace-nowrap ${
               filter === "Inspection"
                 ? "bg-teal-600 text-white shadow-xs"
                 : "border border-teal-200 bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-300 hover:opacity-80"
@@ -272,7 +279,7 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
           <button
             type="button"
             onClick={() => setFilter("Test")}
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-bold transition cursor-pointer shrink-0 whitespace-nowrap ${
               filter === "Test"
                 ? "bg-purple-600 text-white shadow-xs"
                 : "border border-purple-200 bg-purple-50 text-purple-700 dark:bg-purple-950/30 dark:text-purple-300 hover:opacity-80"
@@ -283,7 +290,7 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
           </button>
         </div>
 
-        <span className="text-[11px] text-muted">
+        <span className="text-[11px] text-muted whitespace-nowrap">
           {monthStats.total} active records in {monthLabel}
         </span>
       </div>
