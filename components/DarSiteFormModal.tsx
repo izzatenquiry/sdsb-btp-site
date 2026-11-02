@@ -389,21 +389,24 @@ export function DarSiteFormModal({
 
       {/* Header */}
       <div className={MODAL_HEADER_CLASS}>
-        <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-white font-black text-lg shadow-md">
-            <FileText className="h-6 w-6" />
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="grid h-10 w-10 sm:h-11 sm:w-11 place-items-center rounded-xl bg-accent text-white font-black text-base sm:text-lg shadow-md shrink-0">
+            <FileText className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 id="dsr-form-title" className={MODAL_TITLE_CLASS}>
-                Daily Site Report (DSR)
-              </h3>
-              <span className="font-mono text-xs font-bold text-accent bg-accent/15 px-2 py-0.5 rounded border border-accent/25">
+          <div className="min-w-0 flex-1">
+            <h3 id="dsr-form-title" className="text-sm sm:text-base font-bold text-ink tracking-tight">
+              Daily Site Report (DSR)
+            </h3>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <span className="font-mono text-[11px] font-bold text-accent bg-accent/15 px-2 py-0.5 rounded border border-accent/25 whitespace-nowrap">
                 {refNo}
               </span>
+              <span className="text-[10px] text-muted truncate hidden sm:inline">
+                SHENGDING CONSTRUCTION SDN BHD (SDSB) · BTP QAQC Control
+              </span>
             </div>
-            <p className={MODAL_SUBTITLE_CLASS}>
-              SHENGDING CONSTRUCTION SDN BHD (SDSB) · Banting Technology Park QAQC Control
+            <p className="text-[10px] text-muted truncate sm:hidden mt-0.5">
+              SHENGDING CONSTRUCTION SDN BHD (SDSB)
             </p>
           </div>
         </div>
@@ -733,42 +736,42 @@ export function DarSiteFormModal({
             onChange={handleFilesFromInput}
           />
 
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-line pb-2">
             <span className="text-xs font-bold text-ink uppercase tracking-wider flex items-center gap-1.5">
               <ImageIcon className="h-3.5 w-3.5 text-indigo-600" />
               Site Progress Photos & Evidence ({photos.length})
             </span>
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5 w-full sm:w-auto sm:flex sm:items-center">
               {/* Phone Camera button */}
               <button
                 type="button"
                 onClick={() => cameraInputRef.current?.click()}
-                className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition cursor-pointer text-center whitespace-nowrap"
                 title="Capture photo directly using mobile camera"
               >
-                <Camera className="h-3.5 w-3.5" />
-                <span>Camera (Mobile)</span>
+                <Camera className="h-3.5 w-3.5 shrink-0" />
+                <span>Camera</span>
               </button>
 
               {/* PC / Gallery File Picker */}
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-1 rounded-md bg-accent px-2.5 py-1 text-[11px] font-bold text-white hover:bg-accent-bright transition cursor-pointer shadow-xs"
+                className="inline-flex items-center justify-center gap-1 rounded-md bg-accent px-2 py-1.5 text-[11px] font-bold text-white hover:bg-accent-bright transition cursor-pointer shadow-xs text-center whitespace-nowrap"
                 title="Select photos from computer or device gallery"
               >
-                <Upload className="h-3.5 w-3.5" />
-                <span>+ Add Photos (PC / Gallery)</span>
+                <Upload className="h-3.5 w-3.5 shrink-0" />
+                <span>+ Add Photos</span>
               </button>
 
               {/* Quick URL Toggle */}
               <button
                 type="button"
                 onClick={() => setUrlModalOpen((v) => !v)}
-                className="inline-flex items-center gap-1 rounded-md border border-line bg-paper px-2 py-1 text-[11px] font-semibold text-muted hover:text-ink transition cursor-pointer"
+                className="inline-flex items-center justify-center gap-1 rounded-md border border-line bg-paper px-2 py-1.5 text-[11px] font-semibold text-muted hover:text-ink transition cursor-pointer text-center whitespace-nowrap"
                 title="Add photo via web URL link"
               >
-                <LinkIcon className="h-3.5 w-3.5" />
+                <LinkIcon className="h-3.5 w-3.5 shrink-0" />
                 <span>URL</span>
               </button>
             </div>
@@ -980,76 +983,78 @@ export function DarSiteFormModal({
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-line">
-          <div className="flex items-center gap-2">
+        {/* Footer Actions - Strictly Sebaris */}
+        <div className="grid grid-cols-4 gap-1.5 pt-2 border-t border-line w-full shrink-0">
+          {/* 1. Share */}
+          <button
+            type="button"
+            onClick={handleShareWhatsApp}
+            className="inline-flex items-center justify-center gap-1 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-1 sm:px-2.5 py-2 text-[11px] sm:text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition cursor-pointer text-center whitespace-nowrap"
+            title="Share formatted Daily Site Report to WhatsApp"
+          >
+            <Share2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+            <span className="truncate">{waCopied ? "Copied!" : "Share"}</span>
+          </button>
+
+          {/* 2. Print/PDF */}
+          {onPrintDsr && (
             <button
               type="button"
-              onClick={handleShareWhatsApp}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition cursor-pointer"
-              title="Share formatted Daily Site Report to WhatsApp"
+              onClick={() => {
+                const record: DsrRecord = {
+                  id: editDsrId || `dsr-${Date.now()}`,
+                  refNo,
+                  date,
+                  shift,
+                  weatherAm,
+                  weatherPm,
+                  location,
+                  subLocation,
+                  descriptionOfWorks,
+                  plant,
+                  manpower,
+                  activities,
+                  materials,
+                  qaqcNotes,
+                  hsseNotes,
+                  constraints,
+                  tomorrowPlan,
+                  remarks,
+                  photos,
+                  preparedBy,
+                  verifiedBy,
+                  status,
+                  createdAt: "",
+                  updatedAt: "",
+                };
+                onPrintDsr(record);
+              }}
+              className="inline-flex items-center justify-center gap-1 rounded-lg border border-line bg-paper px-1 sm:px-2.5 py-2 text-[11px] sm:text-xs font-bold text-ink hover:border-accent hover:text-accent transition cursor-pointer text-center whitespace-nowrap shadow-2xs"
+              title="Print / View PDF Document"
             >
-              <Share2 className="h-3.5 w-3.5 text-emerald-600" />
-              <span>{waCopied ? "WhatsApp Text Copied!" : "Share WhatsApp"}</span>
+              <Printer className="h-3.5 w-3.5 text-accent shrink-0" />
+              <span className="truncate">Print/PDF</span>
             </button>
+          )}
 
-            {onPrintDsr && (
-              <button
-                type="button"
-                onClick={() => {
-                  const record: DsrRecord = {
-                    id: editDsrId || `dsr-${Date.now()}`,
-                    refNo,
-                    date,
-                    shift,
-                    weatherAm,
-                    weatherPm,
-                    location,
-                    subLocation,
-                    descriptionOfWorks,
-                    plant,
-                    manpower,
-                    activities,
-                    materials,
-                    qaqcNotes,
-                    hsseNotes,
-                    constraints,
-                    tomorrowPlan,
-                    remarks,
-                    photos,
-                    preparedBy,
-                    verifiedBy,
-                    status,
-                    createdAt: "",
-                    updatedAt: "",
-                  };
-                  onPrintDsr(record);
-                }}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-paper px-3 py-2 text-xs font-bold text-ink hover:border-accent hover:text-accent transition cursor-pointer"
-              >
-                <Printer className="h-3.5 w-3.5 text-accent" />
-                <span>Print / PDF View</span>
-              </button>
-            )}
-          </div>
+          {/* 3. Cancel */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center justify-center rounded-lg border border-line bg-paper px-1 sm:px-2.5 py-2 text-[11px] sm:text-xs font-semibold text-muted hover:text-ink transition cursor-pointer text-center whitespace-nowrap shadow-2xs"
+          >
+            Cancel
+          </button>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg border border-line bg-paper px-4 py-2 text-xs font-semibold text-muted hover:text-ink transition cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-5 py-2 text-xs font-bold text-white shadow-md hover:brightness-110 active:scale-95 transition disabled:opacity-50 cursor-pointer"
-            >
-              <Save className="h-4 w-4" />
-              <span>{saving ? "Saving DSR..." : "Save Daily Site Report"}</span>
-            </button>
-          </div>
+          {/* 4. Save DSR */}
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex items-center justify-center gap-1 rounded-lg bg-accent px-1 sm:px-2.5 py-2 text-[11px] sm:text-xs font-bold text-white shadow-sm hover:brightness-110 active:scale-95 transition disabled:opacity-50 cursor-pointer text-center whitespace-nowrap"
+          >
+            <Save className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{saving ? "Saving..." : "Save DSR"}</span>
+          </button>
         </div>
       </form>
     </CenteredModal>
