@@ -19,17 +19,17 @@ export function OfficialFormHeader({
         <tr>
           {/* Left Cell: SDSB (Shengding) Logo - Centered in box */}
           <td className="w-[18%] border-r-2 border-black p-1.5 text-center align-middle bg-white">
-            <div className="flex items-center justify-center w-full h-full min-h-[44px]">
+            <div className="flex items-center justify-center w-full h-full min-h-[50px]">
               <img
                 src="/logo/SDSB.png"
                 alt="SDSB"
-                className="max-h-12 w-auto max-w-[95px] object-contain mx-auto block"
+                className="max-h-14 w-auto max-w-[105px] object-contain mx-auto block"
               />
             </div>
           </td>
 
           {/* Center Cell: Form Title & Project Details */}
-          <td className="w-[54%] border-r-2 border-black px-2.5 py-1 text-center align-middle bg-white">
+          <td className="w-[53%] border-r-2 border-black px-2.5 py-1.5 text-center align-middle bg-white">
             <h1 className="font-extrabold text-sm sm:text-base uppercase tracking-wide leading-tight text-slate-950 m-0">
               {title}
             </h1>
@@ -42,22 +42,22 @@ export function OfficialFormHeader({
           </td>
 
           {/* Right Cell: Turner & DAYONE Logos - Strictly Side-by-Side (Kiri & Kanan, Sebaris) */}
-          <td className="w-[28%] p-1 text-center align-middle bg-white">
-            <table className="w-full border-collapse border-0 m-0 p-0">
+          <td className="w-[30%] px-2 py-1 text-center align-middle bg-white">
+            <table className="w-full border-collapse border-0 m-0 p-0 table-fixed">
               <tbody>
                 <tr className="border-0">
                   <td className="w-1/2 p-0.5 text-center align-middle border-0">
                     <img
                       src="/logo/TURNER.png"
                       alt="Turner"
-                      className="max-h-6 max-w-[75px] w-auto object-contain mx-auto block"
+                      className="h-7 sm:h-8 max-w-[100px] w-auto object-contain mx-auto block"
                     />
                   </td>
                   <td className="w-1/2 p-0.5 text-center align-middle border-0">
                     <img
                       src="/logo/DAYONE.png"
                       alt="DayOne"
-                      className="max-h-7 max-w-[90px] w-auto object-contain mx-auto block"
+                      className="h-7 sm:h-8 max-w-[100px] w-auto object-contain mx-auto block"
                     />
                   </td>
                 </tr>
