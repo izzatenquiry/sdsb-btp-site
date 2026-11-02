@@ -283,6 +283,18 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
                 color-scheme: light !important;
                 box-sizing: border-box !important;
               }
+              #printable-form-sheet table td, #printable-form-sheet table th {
+                vertical-align: middle !important;
+                line-height: 1.3 !important;
+              }
+              #printable-form-sheet label {
+                display: inline-block !important;
+                white-space: nowrap !important;
+                vertical-align: middle !important;
+              }
+              #printable-form-sheet label * {
+                vertical-align: middle !important;
+              }
               .bg-slate-200 { background-color: #e2e8f0 !important; }
               .bg-slate-100 { background-color: #f1f5f9 !important; }
               .bg-slate-50  { background-color: #f8fafc !important; }
@@ -330,29 +342,49 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
               console.warn("Color sanitize warning:", e);
             }
 
+            // Replace native checkboxes with high-fidelity visual checkmarks that html2canvas renders identically
+            clonedDoc.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+              const isChecked = (input as HTMLInputElement).checked;
+              const box = clonedDoc.createElement("span");
+              box.style.display = "inline-block";
+              box.style.width = "12px";
+              box.style.height = "12px";
+              box.style.minWidth = "12px";
+              box.style.minHeight = "12px";
+              box.style.borderRadius = "2px";
+              box.style.marginRight = "4px";
+              box.style.verticalAlign = "middle";
+              box.style.textAlign = "center";
+              box.style.lineHeight = "12px";
+              box.style.fontSize = "9px";
+              box.style.fontWeight = "bold";
+              box.style.boxSizing = "border-box";
+              if (isChecked) {
+                box.style.border = "1px solid #2563eb";
+                box.style.backgroundColor = "#2563eb";
+                box.style.color = "#ffffff";
+                box.innerHTML = "&#10003;";
+              } else {
+                box.style.border = "1.5px solid #94a3b8";
+                box.style.backgroundColor = "#ffffff";
+                box.innerHTML = "&nbsp;";
+              }
+              input.parentNode?.replaceChild(box, input);
+            });
+
             clonedDoc.body.style.margin = "0";
             clonedDoc.body.style.padding = "0";
             clonedDoc.body.style.background = "#ffffff";
-            clonedDoc.body.style.overflow = "hidden";
-            clonedDoc.body.style.width = "794px";
-            clonedDoc.body.style.height = "1123px";
+            clonedDoc.body.style.overflow = "visible";
 
-            // Enforce exact 1:1 A4 sheet dimensions matching the screen preview
+            // Enforce standard A4 preview width
             targetEl.style.position = "static";
-            targetEl.style.margin = "0";
+            targetEl.style.margin = "0 auto";
             targetEl.style.boxSizing = "border-box";
             targetEl.style.width = "794px";
             targetEl.style.maxWidth = "794px";
-            targetEl.style.height = "1123px";
-            targetEl.style.minHeight = "1123px";
-            targetEl.style.maxHeight = "1123px";
-            targetEl.style.padding = "24px 28px";
             targetEl.style.boxShadow = "none";
             targetEl.style.border = "none";
-            targetEl.style.display = "flex";
-            targetEl.style.flexDirection = "column";
-            targetEl.style.justifyContent = "space-between";
-            targetEl.style.overflow = "hidden";
             targetEl.style.visibility = "visible";
             targetEl.style.opacity = "1";
 
@@ -370,8 +402,26 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         compress: true,
       });
 
-      // Exact 1:1 Full Page A4 fit (0,0 to 210mm x 297mm)
-      pdf.addImage(imgData, "PNG", 0, 0, 210, 297, undefined, "FAST");
+      // Fit preview proportionally onto 1 page A4 full page
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const aspect = rawCanvas.height / rawCanvas.width;
+      
+      let pdfW = pageWidth;
+      let pdfH = pdfW * aspect;
+      let posX = 0;
+      let posY = 0;
+
+      if (pdfH > pageHeight) {
+        pdfH = pageHeight;
+        pdfW = pdfH / aspect;
+        posX = (pageWidth - pdfW) / 2;
+        posY = 0;
+      } else {
+        posY = (pageHeight - pdfH) / 2;
+      }
+
+      pdf.addImage(imgData, "PNG", posX, posY, pdfW, pdfH, undefined, "FAST");
 
       const filename = `${template.code}_${formData.refNo || "Form"}.pdf`
         .replace(/[/\\?%*:|"<>]/g, "-")

@@ -626,6 +626,8 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         allowTaint: true,
         logging: false,
         backgroundColor: "#ffffff",
+        windowWidth: 1200,
+        windowHeight: 2500,
         scrollX: 0,
         scrollY: 0,
         onclone: (clonedDoc, clonedEl) => {
@@ -649,6 +651,18 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
                 box-sizing: border-box !important;
               }
               #printable-form-sheet .no-print { display: none !important; }
+              #printable-form-sheet table td, #printable-form-sheet table th {
+                vertical-align: middle !important;
+                line-height: 1.3 !important;
+              }
+              #printable-form-sheet label {
+                display: inline-block !important;
+                white-space: nowrap !important;
+                vertical-align: middle !important;
+              }
+              #printable-form-sheet label * {
+                vertical-align: middle !important;
+              }
               .bg-slate-200 { background-color: #e2e8f0 !important; }
               .bg-slate-100 { background-color: #f1f5f9 !important; }
               .bg-slate-50  { background-color: #f8fafc !important; }
@@ -671,21 +685,29 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             clonedDoc.querySelectorAll('input[type="checkbox"]').forEach((input) => {
               const isChecked = (input as HTMLInputElement).checked;
               const box = clonedDoc.createElement("span");
-              box.style.display = "inline-flex";
-              box.style.alignItems = "center";
-              box.style.justifyContent = "center";
-              box.style.width = "13px";
-              box.style.height = "13px";
+              box.style.display = "inline-block";
+              box.style.width = "12px";
+              box.style.height = "12px";
+              box.style.minWidth = "12px";
+              box.style.minHeight = "12px";
               box.style.borderRadius = "2px";
               box.style.marginRight = "4px";
               box.style.verticalAlign = "middle";
-              box.style.border = isChecked ? "1.5px solid #2563eb" : "1.5px solid #94a3b8";
-              box.style.backgroundColor = isChecked ? "#2563eb" : "#ffffff";
-              box.style.color = "#ffffff";
+              box.style.textAlign = "center";
+              box.style.lineHeight = "12px";
               box.style.fontSize = "9px";
               box.style.fontWeight = "bold";
-              box.style.lineHeight = "1";
-              box.innerHTML = isChecked ? "&#10003;" : "";
+              box.style.boxSizing = "border-box";
+              if (isChecked) {
+                box.style.border = "1px solid #2563eb";
+                box.style.backgroundColor = "#2563eb";
+                box.style.color = "#ffffff";
+                box.innerHTML = "&#10003;";
+              } else {
+                box.style.border = "1.5px solid #94a3b8";
+                box.style.backgroundColor = "#ffffff";
+                box.innerHTML = "&nbsp;";
+              }
               input.parentNode?.replaceChild(box, input);
             });
 
@@ -718,24 +740,8 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
               console.warn("Color sanitize warning:", e);
             }
 
-            clonedDoc.body.style.margin = "0";
-            clonedDoc.body.style.padding = "0";
-            clonedDoc.body.style.background = "#ffffff";
-            clonedDoc.body.style.overflow = "visible";
-
-            // Keep targetEl exactly as in screen preview
-            targetEl.style.position = "static";
-            targetEl.style.margin = "0 auto";
-            targetEl.style.boxSizing = "border-box";
-            targetEl.style.width = "800px";
-            targetEl.style.maxWidth = "800px";
             targetEl.style.boxShadow = "none";
             targetEl.style.border = "none";
-            targetEl.style.visibility = "visible";
-            targetEl.style.opacity = "1";
-
-            clonedDoc.body.innerHTML = "";
-            clonedDoc.body.appendChild(targetEl);
           }
         },
       });
@@ -748,18 +754,24 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         compress: true,
       });
 
-      // Fit preview proportionally onto 1 page A4
+      // Fit preview proportionally onto 1 page A4 full page
       const pageWidth = 210;
       const pageHeight = 297;
-      const margin = 5;
-      const maxW = pageWidth - margin * 2; // 200mm
-      const maxH = pageHeight - margin * 2; // 287mm
+      const aspect = rawCanvas.height / rawCanvas.width;
+      
+      let pdfW = pageWidth;
+      let pdfH = pdfW * aspect;
+      let posX = 0;
+      let posY = 0;
 
-      const scale = Math.min(maxW / rawCanvas.width, maxH / rawCanvas.height);
-      const pdfW = rawCanvas.width * scale;
-      const pdfH = rawCanvas.height * scale;
-      const posX = (pageWidth - pdfW) / 2;
-      const posY = (pageHeight - pdfH) / 2;
+      if (pdfH > pageHeight) {
+        pdfH = pageHeight;
+        pdfW = pdfH / aspect;
+        posX = (pageWidth - pdfW) / 2;
+        posY = 0;
+      } else {
+        posY = (pageHeight - pdfH) / 2;
+      }
 
       pdf.addImage(imgData, "PNG", posX, posY, pdfW, pdfH, undefined, "FAST");
 
@@ -1402,7 +1414,7 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
               <div
                 id="printable-form-sheet"
                 ref={printAreaRef}
-                className="w-full max-w-[820px] bg-white text-slate-900 shadow-2xl rounded-sm p-6 sm:p-8 border border-slate-300 dark:border-slate-800 transition-all font-sans leading-normal self-start"
+                className="w-full max-w-[820px] bg-white text-slate-900 shadow-2xl rounded-sm p-5 sm:p-6 border border-slate-300 dark:border-slate-800 transition-all font-sans leading-normal self-start"
               >
                 {selectedTemplateId === "rfwi" && (
                   <RfwiSheet formData={liveFormData} setFormData={setSheetFields} />
