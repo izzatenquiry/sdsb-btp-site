@@ -245,7 +245,7 @@ export function AppShell({
                   : "bg-white/10 text-slate-100 shadow-black/20 hover:bg-white/18 hover:text-white"
               }`}
             >
-              Forms Bank
+              Templates
             </button>
 
             <button
