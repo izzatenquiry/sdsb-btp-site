@@ -271,21 +271,16 @@ export function StaffDailyReportModal({
       <div className={MODAL_ACCENT_CLASS} />
 
       {/* Header */}
-      <div className={MODAL_HEADER_CLASS}>
-        <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-white font-black text-lg shadow-md">
-            <CalendarIcon className="h-6 w-6" />
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line bg-paper/80 px-3.5 py-2.5 sm:px-6 sm:py-3.5">
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+          <div className="grid h-10 w-10 sm:h-11 sm:w-11 place-items-center rounded-xl bg-accent text-white font-black text-base sm:text-lg shadow-md shrink-0">
+            <CalendarIcon className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 id="staff-daily-report-title" className={MODAL_TITLE_CLASS}>
-                Personal Daily Report & Activity Calendar
-              </h3>
-              <span className="rounded-full bg-teal-500/15 px-2.5 py-0.5 text-[10px] font-bold text-teal-700 dark:text-teal-300 border border-teal-500/30">
-                SDSB DSR Workspace
-              </span>
-            </div>
-            <p className={MODAL_SUBTITLE_CLASS}>
+          <div className="min-w-0 flex-1">
+            <h3 id="staff-daily-report-title" className="text-sm sm:text-base font-bold text-ink truncate tracking-tight">
+              Personal Daily Report & Activity Calendar
+            </h3>
+            <p className="text-[11px] text-muted truncate mt-0.5">
               {userName} · {userRole} · SHENGDING CONSTRUCTION SDN BHD (SDSB)
             </p>
           </div>
@@ -294,7 +289,7 @@ export function StaffDailyReportModal({
         <button
           type="button"
           onClick={onClose}
-          className={MODAL_CLOSE_CLASS}
+          className="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-field hover:text-ink transition cursor-pointer text-sm font-bold border border-transparent hover:border-line shrink-0"
           aria-label="Close"
         >
           ✕
