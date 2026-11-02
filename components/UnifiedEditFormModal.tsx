@@ -633,6 +633,16 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         onclone: (clonedDoc, clonedEl) => {
           const targetEl = (clonedEl || clonedDoc.getElementById("printable-form-sheet")) as HTMLElement | null;
           if (targetEl) {
+            // Force display: block and visibility: visible on targetEl and all its ancestors in clonedDoc
+            let curr: HTMLElement | null = targetEl;
+            while (curr && curr !== clonedDoc.body) {
+              curr.style.display = "block";
+              curr.style.visibility = "visible";
+              curr.style.opacity = "1";
+              curr.classList.remove("hidden");
+              curr = curr.parentElement;
+            }
+
             // Strip any oklch color references that break html2canvas
             const style = clonedDoc.createElement("style");
             style.innerHTML = `
@@ -705,6 +715,9 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             targetEl.style.overflow = "visible";
             targetEl.style.boxShadow = "none";
             targetEl.style.border = "none";
+            targetEl.style.display = "block";
+            targetEl.style.visibility = "visible";
+            targetEl.style.opacity = "1";
 
             clonedDoc.body.innerHTML = "";
             clonedDoc.body.appendChild(targetEl);
@@ -1333,8 +1346,11 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
 
         {/* ================= RIGHT PANE: LIVE PREVIEW FORM & SCANCOPY ================= */}
         <div
+          id="unified-preview-pane"
           className={`flex-1 min-h-0 bg-slate-100 dark:bg-slate-950/80 flex-col overflow-hidden ${
-            mobileView === "preview" ? "flex" : "hidden lg:flex"
+            mobileView === "preview"
+              ? "flex"
+              : "max-lg:fixed max-lg:-left-[9999px] max-lg:top-0 max-lg:w-[820px] max-lg:pointer-events-none max-lg:opacity-0 max-lg:overflow-hidden lg:flex"
           }`}
         >
           
@@ -1585,6 +1601,15 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             overflow: visible !important;
             box-shadow: none !important;
             background: transparent !important;
+          }
+          #unified-preview-pane {
+            position: static !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            display: block !important;
+            opacity: 1 !important;
+            visibility: visible !important;
           }
           #printable-form-sheet,
           #printable-form-sheet * {
