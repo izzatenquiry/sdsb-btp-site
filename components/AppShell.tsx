@@ -411,31 +411,39 @@ export function AppShell({
               </div>
             </div>
 
-            <nav className="flex flex-col gap-2">
+            <nav className="grid grid-cols-2 gap-2">
+              {/* Row 1: Dashboard | Register */}
               <button
                 type="button"
                 onClick={() => {
                   onSelectSection("Overview");
                   setMobileNavOpen(false);
                 }}
-                className={`rounded-lg p-2.5 text-left text-sm font-semibold transition ${
-                  activeSection === "Overview" ? "bg-accent text-white" : "text-slate-200 hover:bg-white/10"
+                className={`flex h-11 items-center justify-center rounded-xl text-center text-sm font-bold shadow-xs transition cursor-pointer ${
+                  activeSection === "Overview"
+                    ? "bg-accent text-white shadow-accent/30"
+                    : "bg-white/10 text-slate-100 hover:bg-white/15"
                 }`}
               >
-                Dashboard Overview
+                Dashboard
               </button>
+
               <button
                 type="button"
                 onClick={() => {
                   onSelectSection("Registers");
                   setMobileNavOpen(false);
                 }}
-                className={`rounded-lg p-2.5 text-left text-sm font-semibold transition ${
-                  activeSection === "Registers" ? "bg-accent text-white" : "text-slate-200 hover:bg-white/10"
+                className={`flex h-11 items-center justify-center rounded-xl text-center text-sm font-bold shadow-xs transition cursor-pointer ${
+                  activeSection === "Registers"
+                    ? "bg-accent text-white shadow-accent/30"
+                    : "bg-white/10 text-slate-100 hover:bg-white/15"
                 }`}
               >
-                22 Registers (Excel View)
+                Register
               </button>
+
+              {/* Row 2: Templates | Team */}
               <button
                 type="button"
                 onClick={() => {
@@ -446,46 +454,29 @@ export function AppShell({
                   }
                   setMobileNavOpen(false);
                 }}
-                className={`rounded-lg p-2.5 text-left text-sm font-semibold transition flex items-center justify-between ${
-                  formsBankOpen || activeSection === "Forms" ? "bg-accent text-white" : "text-slate-200 hover:bg-white/10"
+                className={`flex h-11 items-center justify-center rounded-xl text-center text-sm font-bold shadow-xs transition cursor-pointer ${
+                  formsBankOpen || activeSection === "Forms"
+                    ? "bg-accent text-white shadow-accent/30"
+                    : "bg-white/10 text-slate-100 hover:bg-white/15"
                 }`}
               >
-                <span>BTP Governance Form Bank</span>
-                <span className="text-[10px] bg-accent/20 text-accent-bright px-2 py-0.5 rounded font-bold">14 Forms</span>
+                Templates
               </button>
+
               <button
                 type="button"
                 onClick={() => {
                   if (onOpenTeam) onOpenTeam();
                   setMobileNavOpen(false);
                 }}
-                className={`rounded-lg p-2.5 text-left text-sm font-semibold transition flex items-center justify-between ${
-                  activeSection === "Team" ? "bg-accent text-white" : "text-slate-200 hover:bg-white/10"
+                className={`flex h-11 items-center justify-center rounded-xl text-center text-sm font-bold shadow-xs transition cursor-pointer ${
+                  activeSection === "Team"
+                    ? "bg-accent text-white shadow-accent/30"
+                    : "bg-white/10 text-slate-100 hover:bg-white/15"
                 }`}
               >
-                <span>Team Roster</span>
-                <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-slate-300">QA/QC Staff</span>
+                Team
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onOpenNewRecord();
-                  setMobileNavOpen(false);
-                }}
-                className="rounded-lg bg-emerald-600/90 p-2.5 text-center text-sm font-semibold text-white shadow hover:brightness-110"
-              >
-                + Add Register Record
-              </button>
-              <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-3">
-                <span className="text-xs text-slate-400">Theme</span>
-                <button
-                  type="button"
-                  onClick={handleThemeToggle}
-                  className="rounded-lg bg-white/10 px-3 py-1.5 text-xs text-slate-200"
-                >
-                  {theme === "light" ? "🌙 Dark Mode" : "☀️ Daylight Mode"}
-                </button>
-              </div>
             </nav>
           </div>
         )}
