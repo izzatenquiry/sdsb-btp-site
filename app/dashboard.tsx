@@ -99,7 +99,7 @@ const CATEGORY_META: Record<
     title: "Submissions, Governance & Surveillance",
     description: "MOS Revisions, ITP, Checklists, OJT, FOK List, RSS & SSR Surveillance",
     classTag: "category-0",
-    shortLabel: "Submissions & Gov",
+    shortLabel: "Submissions",
   },
   Test: {
     title: "QAQC Testing Records",
@@ -770,14 +770,14 @@ export function Dashboard({
                 </div>
 
                 {/* Arrow navigation and category selector tabs */}
-                <div className="flex items-center gap-1.5">
-                  <div className="flex items-center gap-1 bg-paper/60 border border-line rounded-lg p-0.5 shadow-2xs">
+                <div className="flex items-center gap-1.5 max-w-full overflow-x-auto no-scrollbar">
+                  <div className="flex items-center gap-1 bg-paper/60 border border-line rounded-lg p-0.5 shadow-2xs shrink-0">
                     {categoryBreakdown.map((cat, idx) => (
                       <button
                         key={cat.category}
                         type="button"
                         onClick={() => setActiveCategorySlide(idx)}
-                        className={`rounded-md px-2.5 py-1 text-xs font-bold transition cursor-pointer ${
+                        className={`rounded-md px-2 sm:px-2.5 py-1 text-xs font-bold whitespace-nowrap shrink-0 transition cursor-pointer ${
                           activeCategorySlide === idx
                             ? "bg-accent text-white shadow-xs"
                             : "text-muted hover:text-ink hover:bg-field"
@@ -790,20 +790,20 @@ export function Dashboard({
                     <button
                       type="button"
                       onClick={() => setActiveCategorySlide(3)}
-                      className={`flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-bold transition cursor-pointer ${
+                      className={`flex items-center gap-1 rounded-md px-2 sm:px-2.5 py-1 text-xs font-bold whitespace-nowrap shrink-0 transition cursor-pointer ${
                         activeCategorySlide === 3
                           ? "bg-accent text-white shadow-xs"
                           : "text-muted hover:text-ink hover:bg-field"
                       }`}
                       title="Quality Analytics & Donut Distribution"
                     >
-                      <PieIcon className="h-3 w-3" />
+                      <PieIcon className="h-3 w-3 shrink-0" />
                       <span>Analytics</span>
                     </button>
                   </div>
 
                   {/* Left and Right Arrow Buttons */}
-                  <div className="flex items-center border border-line rounded-lg bg-paper overflow-hidden shadow-2xs">
+                  <div className="flex items-center border border-line rounded-lg bg-paper overflow-hidden shadow-2xs shrink-0">
                     <button
                       type="button"
                       onClick={prevCategorySlide}
@@ -812,7 +812,7 @@ export function Dashboard({
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </button>
-                    <span className="text-[11px] font-bold text-ink px-2 border-x border-line">
+                    <span className="text-[11px] font-bold text-ink px-2 border-x border-line whitespace-nowrap">
                       {activeCategorySlide + 1} / 4
                     </span>
                     <button
