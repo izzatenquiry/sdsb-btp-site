@@ -207,8 +207,9 @@ export function MafSheet({
                   <div><strong>Name:</strong> ___________________________________</div>
                   <div><strong>Position:</strong> Resident Engineer / Inspector</div>
                   <div><strong>Company:</strong> Supervising Consultant</div>
-                  <div className="mt-3 pt-1 border-t border-dashed border-slate-400">
-                    <strong>Date & Signature:</strong> ____________________________
+                  <div className="mt-2 pt-1 border-t border-dashed border-slate-400">
+                    <div className="h-11" />
+                    <div><strong>Date & Signature:</strong> ____________________________</div>
                   </div>
                 </div>
               </td>
@@ -220,8 +221,9 @@ export function MafSheet({
                   <div><strong>Name:</strong> ___________________________________</div>
                   <div><strong>Position:</strong> PMC Quality Director / Lead</div>
                   <div><strong>Company:</strong> PMC / DayOne</div>
-                  <div className="mt-3 pt-1 border-t border-dashed border-slate-400">
-                    <strong>Date & Signature:</strong> ____________________________
+                  <div className="mt-2 pt-1 border-t border-dashed border-slate-400">
+                    <div className="h-11" />
+                    <div><strong>Date & Signature:</strong> ____________________________</div>
                   </div>
                 </div>
               </td>

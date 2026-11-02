@@ -288,8 +288,11 @@ export function RfwiSheet({
                   <div><strong>Name:</strong> ___________________________________</div>
                   <div><strong>Position:</strong> Resident Engineer / Inspector (C&S)</div>
                   <div><strong>Company:</strong> Supervising Consultant</div>
-                  <div className="mt-1.5 pt-1 border-t border-dashed border-slate-400">
-                    <strong>Signature & Date:</strong> ____________________________
+                  <div className="mt-2 pt-1 border-t border-dashed border-slate-400">
+                    <div className="h-11" />
+                    <div>
+                      <strong>Signature & Date:</strong> ____________________________
+                    </div>
                   </div>
                 </div>
               </td>
@@ -301,8 +304,11 @@ export function RfwiSheet({
                   <div><strong>Name:</strong> ___________________________________</div>
                   <div><strong>Position:</strong> PMC Quality Director / Lead</div>
                   <div><strong>Company:</strong> PMC / DayOne</div>
-                  <div className="mt-1.5 pt-1 border-t border-dashed border-slate-400">
-                    <strong>Signature & Date:</strong> ____________________________
+                  <div className="mt-2 pt-1 border-t border-dashed border-slate-400">
+                    <div className="h-11" />
+                    <div>
+                      <strong>Signature & Date:</strong> ____________________________
+                    </div>
                   </div>
                 </div>
               </td>
