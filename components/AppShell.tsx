@@ -118,17 +118,7 @@ export function AppShell({
             </p>
           </button>
 
-          <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
-            <button
-              type="button"
-              onClick={onOpenProfile}
-              title={`Profil ${userName} · Document Controller & System Admin`}
-              aria-label={`Profil ${userName}`}
-              className="inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-accent/90 text-white font-extrabold text-[11px] shadow ring-1 ring-white/20 hover:brightness-110 cursor-pointer"
-            >
-              {userName.trim().split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "ND"}
-            </button>
-
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
               title="Add New Record"
