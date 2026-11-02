@@ -27,7 +27,7 @@ export function RfwiSheet({
   }
 
   return (
-    <div className="space-y-1.5 sm:space-y-2 font-sans leading-tight">
+    <div className="space-y-2 sm:space-y-2.5 font-sans leading-tight">
       <OfficialFormHeader
         title="REQUEST FOR WORK INSPECTION (RFWI) FORM"
         projectName={formData.projectName || "SDSB · BANTING TECHNOLOGY PARK (BTP)"}
@@ -38,48 +38,48 @@ export function RfwiSheet({
 
       {/* Section A: Inspection Request Details */}
       <div>
-        <div className="bg-slate-200 border-2 border-black px-2 py-0.5 font-bold text-[10px] uppercase tracking-wide">
+        <div className="bg-slate-200 border-2 border-black px-2.5 py-1 font-bold text-[10.5px] uppercase tracking-wide">
           A. INSPECTION REQUEST DETAILS
         </div>
         <table className="w-full border-2 border-t-0 border-black text-xs border-collapse">
           <tbody>
             <tr className="border-b border-black">
-              <td className="w-[15%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">RFWI No.:</td>
-              <td className="w-[52%] py-1 px-2 border-r border-black font-semibold text-blue-950 text-xs whitespace-nowrap overflow-hidden text-ellipsis">{formData.refNo}</td>
-              <td className="w-[13%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Revision:</td>
-              <td className="w-[20%] py-1 px-2 text-xs">{formData.revision}</td>
+              <td className="w-[15%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">RFWI No.:</td>
+              <td className="w-[52%] py-1.5 px-2 border-r border-black font-semibold text-blue-950 text-xs whitespace-nowrap overflow-hidden text-ellipsis">{formData.refNo}</td>
+              <td className="w-[13%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Revision:</td>
+              <td className="w-[20%] py-1.5 px-2 text-xs">{formData.revision}</td>
             </tr>
             <tr className="border-b border-black">
-              <td className="w-[15%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">ACC Ref.:</td>
-              <td className="w-[52%] py-1 px-2 border-r border-black font-semibold text-blue-950 text-xs whitespace-nowrap overflow-hidden text-ellipsis">{formData.accRef}</td>
-              <td className="w-[13%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Date Submitted:</td>
-              <td className="w-[20%] py-1 px-2 whitespace-nowrap text-xs">{formData.dateSubmitted}</td>
+              <td className="w-[15%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">ACC Ref.:</td>
+              <td className="w-[52%] py-1.5 px-2 border-r border-black font-semibold text-blue-950 text-xs whitespace-nowrap overflow-hidden text-ellipsis">{formData.accRef}</td>
+              <td className="w-[13%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Date Submitted:</td>
+              <td className="w-[20%] py-1.5 px-2 whitespace-nowrap text-xs">{formData.dateSubmitted}</td>
             </tr>
             <tr className="border-b border-black">
-              <td className="w-[15%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Work Package:</td>
-              <td className="w-[52%] py-1 px-2 border-r border-black">{formData.workPackage}</td>
-              <td className="w-[13%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Discipline:</td>
-              <td className="w-[20%] py-1 px-2 font-semibold">{formData.discipline}</td>
+              <td className="w-[15%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Work Package:</td>
+              <td className="w-[52%] py-1.5 px-2 border-r border-black">{formData.workPackage}</td>
+              <td className="w-[13%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Discipline:</td>
+              <td className="w-[20%] py-1.5 px-2 font-semibold">{formData.discipline}</td>
             </tr>
             <tr className="border-b border-black">
-              <td className="w-[15%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Inspection Activity:</td>
-              <td className="py-1 px-2 border-r border-black font-semibold" colSpan={3}>{formData.activity}</td>
+              <td className="w-[15%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Inspection Activity:</td>
+              <td className="py-1.5 px-2 border-r border-black font-semibold" colSpan={3}>{formData.activity}</td>
             </tr>
             <tr className="border-b border-black">
-              <td className="w-[15%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Requested Inspection Date / Time:</td>
-              <td className="py-1 px-2 font-bold text-slate-900" colSpan={3}>
+              <td className="w-[15%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Requested Inspection Date / Time:</td>
+              <td className="py-1.5 px-2 font-bold text-slate-900" colSpan={3}>
                 {formData.requestedInspectionDateTime || `${formData.dateSubmitted} / 10:00 AM`}
               </td>
             </tr>
             <tr className="border-b border-black">
-              <td className="w-[15%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Location / Area / Level / Grid:</td>
-              <td className="w-[52%] py-1 px-2 border-r border-black">{formData.location}</td>
-              <td className="w-[13%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Drawing / ITP Ref.:</td>
-              <td className="w-[20%] py-1 px-2 text-xs truncate">{formData.dwgRef}</td>
+              <td className="w-[15%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Location / Area / Level / Grid:</td>
+              <td className="w-[52%] py-1.5 px-2 border-r border-black">{formData.location}</td>
+              <td className="w-[13%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Drawing / ITP Ref.:</td>
+              <td className="w-[20%] py-1.5 px-2 text-xs truncate">{formData.dwgRef}</td>
             </tr>
             <tr>
-              <td className="w-[15%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Related MS / MAF / NCR Ref.:</td>
-              <td className="py-1 px-2 text-xs" colSpan={3}>{formData.relatedRef}</td>
+              <td className="w-[15%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Related MS / MAF / NCR Ref.:</td>
+              <td className="py-1.5 px-2 text-xs" colSpan={3}>{formData.relatedRef}</td>
             </tr>
           </tbody>
         </table>
@@ -87,23 +87,23 @@ export function RfwiSheet({
 
       {/* Section B: Inspection Type / Purpose */}
       <div>
-        <div className="bg-slate-200 border-2 border-black px-2 py-0.5 font-bold text-[10px] uppercase tracking-wide">
+        <div className="bg-slate-200 border-2 border-black px-2.5 py-1 font-bold text-[10.5px] uppercase tracking-wide">
           B. INSPECTION TYPE / PURPOSE
         </div>
         <table className="w-full border-2 border-t-0 border-black text-xs border-collapse">
           <thead>
             <tr className="bg-slate-100 border-b border-black text-[10px] font-bold">
-              <th className="w-1/4 border-r border-black py-0.5 px-2 text-left">Item</th>
-              <th className="w-1/3 border-r border-black py-0.5 px-2 text-left">Requirement</th>
-              <th className="border-black py-0.5 px-2 text-left">Tick / Confirm as Applicable</th>
+              <th className="w-1/4 border-r border-black py-1 px-2 text-left">Item</th>
+              <th className="w-1/3 border-r border-black py-1 px-2 text-left">Requirement</th>
+              <th className="border-black py-1 px-2 text-left">Tick / Confirm as Applicable</th>
             </tr>
           </thead>
           <tbody>
             <tr className="border-b border-black">
-              <td className="bg-slate-50 py-1 px-2 font-bold border-r border-black">Inspection Type:</td>
-              <td className="py-1 px-2 border-r border-black text-[10px] text-slate-500">—</td>
-              <td className="py-1 px-2">
-                <div className="flex flex-wrap gap-2.5 text-[10px]">
+              <td className="bg-slate-50 py-1.5 px-2 font-bold border-r border-black">Inspection Type:</td>
+              <td className="py-1.5 px-2 border-r border-black text-[10px] text-slate-500">—</td>
+              <td className="py-1.5 px-2">
+                <div className="flex flex-wrap gap-3 text-[10px]">
                   <label className="flex items-center gap-1 font-semibold">
                     <input type="checkbox" defaultChecked /> Check Inspection
                   </label>
@@ -120,10 +120,10 @@ export function RfwiSheet({
               </td>
             </tr>
             <tr className="border-b border-black">
-              <td className="bg-slate-50 py-1 px-2 font-bold border-r border-black">Inspection Criteria:</td>
-              <td className="py-1 px-2 border-r border-black text-[10px] text-slate-500">—</td>
-              <td className="py-1 px-2">
-                <div className="flex flex-wrap gap-2.5 text-[10px]">
+              <td className="bg-slate-50 py-1.5 px-2 font-bold border-r border-black">Inspection Criteria:</td>
+              <td className="py-1.5 px-2 border-r border-black text-[10px] text-slate-500">—</td>
+              <td className="py-1.5 px-2">
+                <div className="flex flex-wrap gap-3 text-[10px]">
                   <label className="flex items-center gap-1 font-semibold">
                     <input type="checkbox" defaultChecked /> Hold Point
                   </label>
@@ -140,14 +140,14 @@ export function RfwiSheet({
               </td>
             </tr>
             <tr className="border-b border-black">
-              <td className="bg-slate-50 py-1 px-2 font-bold border-r border-black">Readiness:</td>
-              <td className="py-1 px-2 text-[9.5px] leading-tight text-slate-700" colSpan={2}>
+              <td className="bg-slate-50 py-1.5 px-2 font-bold border-r border-black">Readiness:</td>
+              <td className="py-1.5 px-2 text-[9.5px] leading-tight text-slate-700" colSpan={2}>
                 Work complete, accessible, safe and all approved documents / records available before inspection.
               </td>
             </tr>
             <tr>
-              <td className="bg-slate-50 py-1 px-2 font-bold border-r border-black">ACC Traceability:</td>
-              <td className="py-1 px-2 text-[9.5px] leading-tight text-slate-800 font-semibold" colSpan={2}>
+              <td className="bg-slate-50 py-1.5 px-2 font-bold border-r border-black">ACC Traceability:</td>
+              <td className="py-1.5 px-2 text-[9.5px] leading-tight text-slate-800 font-semibold" colSpan={2}>
                 No backdating. Submit in ACC with correct reference number, location, trade and attachment evidence.
               </td>
             </tr>
@@ -157,7 +157,7 @@ export function RfwiSheet({
 
       {/* Section C: Inspection Readiness / Attachments */}
       <div>
-        <div className="bg-slate-200 border-2 border-black px-2 py-0.5 font-bold text-[10px] uppercase tracking-wide flex items-center justify-between">
+        <div className="bg-slate-200 border-2 border-black px-2.5 py-1 font-bold text-[10.5px] uppercase tracking-wide flex items-center justify-between">
           <span>C. INSPECTION READINESS / ATTACHMENTS CHECKLIST</span>
           <div className="no-print flex items-center gap-1.5 text-[9px] font-semibold tracking-normal lowercase">
             <button
@@ -178,14 +178,14 @@ export function RfwiSheet({
             </button>
           </div>
         </div>
-        <table className="w-full border-2 border-t-0 border-black text-[9.5px] border-collapse">
+        <table className="w-full border-2 border-t-0 border-black text-[10px] border-collapse">
           <thead>
             <tr className="bg-slate-100 border-b border-black text-center font-bold">
-              <th className="w-7 border-r border-black py-0.5 px-1">No.</th>
-              <th className="border-r border-black py-0.5 px-1.5 text-left">Required Attachment / Readiness Evidence</th>
-              <th className="w-16 border-r border-black py-0.5 px-1 text-center">Included [Y/N]</th>
-              <th className="border-r border-black py-0.5 px-1.5 text-left">Consultant (RE / RA) Remarks</th>
-              <th className="w-16 py-0.5 px-1">PMC</th>
+              <th className="w-7 border-r border-black py-1 px-1">No.</th>
+              <th className="border-r border-black py-1 px-1.5 text-left">Required Attachment / Readiness Evidence</th>
+              <th className="w-16 border-r border-black py-1 px-1 text-center">Included [Y/N]</th>
+              <th className="border-r border-black py-1 px-1.5 text-left">Consultant (RE / RA) Remarks</th>
+              <th className="w-16 py-1 px-1">PMC</th>
             </tr>
           </thead>
           <tbody>
@@ -200,9 +200,9 @@ export function RfwiSheet({
               "Safety Access / Permit-to-Work / Area Readiness Confirmation",
             ].map((item, idx) => (
               <tr key={idx} className="border-b border-black hover:bg-slate-50/80 transition">
-                <td className="border-r border-black py-0.5 px-1 text-center font-bold text-slate-700">{idx + 1}</td>
-                <td className="border-r border-black py-0.5 px-1.5 leading-tight">{item}</td>
-                <td className="border-r border-black py-0.5 px-1 text-center align-middle">
+                <td className="border-r border-black py-1 px-1 text-center font-bold text-slate-700">{idx + 1}</td>
+                <td className="border-r border-black py-1 px-1.5 leading-snug">{item}</td>
+                <td className="border-r border-black py-1 px-1 text-center align-middle">
                   <input
                     type="checkbox"
                     checked={!!checkedItems[idx]}
@@ -210,8 +210,8 @@ export function RfwiSheet({
                     className="h-3.5 w-3.5 cursor-pointer rounded border-slate-400 align-middle"
                   />
                 </td>
-                <td className="border-r border-black py-0.5 px-1.5 text-slate-400">&nbsp;</td>
-                <td className="py-0.5 px-1 text-center text-slate-400">&nbsp;</td>
+                <td className="border-r border-black py-1 px-1.5 text-slate-400">&nbsp;</td>
+                <td className="py-1 px-1 text-center text-slate-400">&nbsp;</td>
               </tr>
             ))}
           </tbody>
@@ -220,25 +220,25 @@ export function RfwiSheet({
 
       {/* Section D: Requested By (General Contractor) */}
       <div>
-        <div className="bg-slate-200 border-2 border-black px-2 py-0.5 font-bold text-[10px] uppercase tracking-wide">
+        <div className="bg-slate-200 border-2 border-black px-2.5 py-1 font-bold text-[10.5px] uppercase tracking-wide">
           D. REQUESTED BY (GENERAL CONTRACTOR - GC)
         </div>
         <table className="w-full border-2 border-t-0 border-black text-xs border-collapse">
           <tbody>
             <tr className="border-b border-black">
-              <td className="w-[15%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Name:</td>
-              <td className="w-[35%] py-1 px-2 border-r border-black font-bold">{formData.requestedBy || "DAMIA"}</td>
-              <td className="w-[18%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Position:</td>
-              <td className="w-[32%] py-1 px-2">{formData.requestedRole || "Document Controller / Site Engineer"}</td>
+              <td className="w-[15%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Name:</td>
+              <td className="w-[35%] py-1.5 px-2 border-r border-black font-bold">{formData.requestedBy || "DAMIA"}</td>
+              <td className="w-[18%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Position:</td>
+              <td className="w-[32%] py-1.5 px-2">{formData.requestedRole || "Document Controller / Site Engineer"}</td>
             </tr>
             <tr>
-              <td className="w-[15%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Company:</td>
-              <td className="w-[35%] py-1 px-2 border-r border-black">{formData.requestedCompany || "SDSB (General Contractor)"}</td>
-              <td className="w-[18%] bg-slate-50 py-1 px-2 font-bold border-r border-black whitespace-nowrap">Date & Signature:</td>
-              <td className="w-[32%] py-1 px-2 text-xs text-slate-900 whitespace-nowrap">
+              <td className="w-[15%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Company:</td>
+              <td className="w-[35%] py-1.5 px-2 border-r border-black">{formData.requestedCompany || "SDSB (General Contractor)"}</td>
+              <td className="w-[18%] bg-slate-50 py-1.5 px-2 font-bold border-r border-black whitespace-nowrap">Date & Signature:</td>
+              <td className="w-[32%] py-1.5 px-2 text-xs text-slate-900 whitespace-nowrap">
                 <span className="font-semibold">{formData.dateSubmitted || "____-____-____"}</span>
-                <span className="text-slate-400 mx-1.5">|</span>
-                <span className="text-slate-600">Sign: <span className="border-b border-black inline-block w-20 align-bottom"></span></span>
+                <span className="text-slate-400 mx-2">|</span>
+                <span className="text-slate-600">Sign: <span className="border-b border-black inline-block w-24 align-bottom"></span></span>
               </td>
             </tr>
           </tbody>
@@ -247,14 +247,14 @@ export function RfwiSheet({
 
       {/* Section E: Inspection Result and Approval Status */}
       <div>
-        <div className="bg-slate-200 border-2 border-black px-2 py-0.5 font-bold text-[10px] uppercase tracking-wide">
+        <div className="bg-slate-200 border-2 border-black px-2.5 py-1 font-bold text-[10.5px] uppercase tracking-wide">
           E. INSPECTION RESULT AND APPROVAL STATUS (FOR CONSULTANT & PMC USE ONLY)
         </div>
         <table className="w-full border-2 border-t-0 border-black text-xs border-collapse">
           <tbody>
             <tr className="border-b border-black">
-              <td className="py-1 px-2" colSpan={4}>
-                <div className="flex flex-wrap items-center justify-between gap-1 font-bold text-[10.5px]">
+              <td className="py-1.5 px-2.5" colSpan={4}>
+                <div className="flex flex-wrap items-center justify-between gap-1 font-bold text-[11px]">
                   <span className="text-slate-700">Inspection Outcome:</span>
                   <label className="flex items-center gap-1 text-slate-800">
                     <input type="checkbox" /> Passed
@@ -272,40 +272,40 @@ export function RfwiSheet({
               </td>
             </tr>
             <tr className="border-b border-black">
-              <td className="py-1 px-2" colSpan={4}>
-                <div className="font-bold text-[9px] text-slate-700 mb-0.5">Inspection Comments / Required Action:</div>
-                <div className="min-h-9 h-9 border border-slate-300 p-1 text-[10.5px] bg-white rounded">
+              <td className="py-1 px-2.5" colSpan={4}>
+                <div className="font-bold text-[9.5px] text-slate-700 mb-0.5">Inspection Comments / Required Action:</div>
+                <div className="min-h-12 border border-slate-300 p-1.5 text-[11px] bg-white rounded">
                   {formData.inspectionComments || ""}
                 </div>
               </td>
             </tr>
             <tr>
-              <td className="w-1/2 border-r-2 border-black p-1.5 align-top" colSpan={2}>
-                <div className="font-bold text-[9px] uppercase text-slate-600 border-b border-black pb-0.5 mb-1">
+              <td className="w-1/2 border-r-2 border-black p-2 align-top" colSpan={2}>
+                <div className="font-bold text-[9.5px] uppercase text-slate-600 border-b border-black pb-0.5 mb-1">
                   Consultant (RE / RA) — Inspected & Recommended
                 </div>
-                <div className="space-y-0.5 text-[10.5px]">
+                <div className="space-y-0.5 text-[11px]">
                   <div><strong>Name:</strong> ___________________________________</div>
                   <div><strong>Position:</strong> Resident Engineer / Inspector (C&S)</div>
                   <div><strong>Company:</strong> Supervising Consultant</div>
-                  <div className="mt-1 pt-0.5 border-t border-dashed border-slate-400">
-                    <div className="h-9" />
+                  <div className="mt-2 pt-1 border-t border-dashed border-slate-400">
+                    <div className="h-14" />
                     <div>
                       <strong>Signature & Date:</strong> ____________________________
                     </div>
                   </div>
                 </div>
               </td>
-              <td className="w-1/2 p-1.5 align-top" colSpan={2}>
-                <div className="font-bold text-[9px] uppercase text-slate-600 border-b border-black pb-0.5 mb-1">
+              <td className="w-1/2 p-2 align-top" colSpan={2}>
+                <div className="font-bold text-[9.5px] uppercase text-slate-600 border-b border-black pb-0.5 mb-1">
                   PMC / DayOne — Witnessed, Acknowledged & Approved
                 </div>
-                <div className="space-y-0.5 text-[10.5px]">
+                <div className="space-y-0.5 text-[11px]">
                   <div><strong>Name:</strong> ___________________________________</div>
                   <div><strong>Position:</strong> PMC Quality Director / Lead</div>
                   <div><strong>Company:</strong> PMC / DayOne</div>
-                  <div className="mt-1 pt-0.5 border-t border-dashed border-slate-400">
-                    <div className="h-9" />
+                  <div className="mt-2 pt-1 border-t border-dashed border-slate-400">
+                    <div className="h-14" />
                     <div>
                       <strong>Signature & Date:</strong> ____________________________
                     </div>
@@ -317,7 +317,7 @@ export function RfwiSheet({
         </table>
       </div>
 
-      <div className="text-[9px] text-slate-500 text-center pt-1">
+      <div className="text-[9.5px] text-slate-500 text-center pt-1.5">
         BTP Governance Control Standard · All records are controlled and synchronized into Autodesk Construction Cloud (ACC).
       </div>
     </div>

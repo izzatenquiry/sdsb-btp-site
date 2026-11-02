@@ -643,13 +643,14 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
               curr = curr.parentElement;
             }
 
-            // Strip any oklch color references that break html2canvas
+            // Clean styling for html2canvas capture without breaking typography
             const style = clonedDoc.createElement("style");
             style.innerHTML = `
               #printable-form-sheet, #printable-form-sheet * {
                 color-scheme: light !important;
                 box-sizing: border-box !important;
               }
+              #printable-form-sheet .no-print { display: none !important; }
               .bg-slate-200 { background-color: #e2e8f0 !important; }
               .bg-slate-100 { background-color: #f1f5f9 !important; }
               .bg-slate-50  { background-color: #f8fafc !important; }
@@ -739,15 +740,17 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
       const pageWidth = 210;
       const pageHeight = 297;
       const marginX = 3;
-      const marginY = 3;
+      const isRfwi = selectedTemplateId === "rfwi";
+      const marginY = isRfwi ? 1 : 3;
       const printableW = pageWidth - marginX * 2; // 204mm
       const printableH = pageHeight - marginY * 2; // 291mm
 
       const canvasAspect = canvas.height / canvas.width;
 
-      // Fit form to maximum full height from top to bottom
-      if (canvasAspect <= 1.8) {
-        pdf.addImage(imgData, "PNG", marginX, marginY, printableW, printableH, undefined, "FAST");
+      // Render form preserving natural aspect ratio cleanly on A4
+      const renderH = Math.min(printableH, printableW * canvasAspect);
+      if (canvasAspect <= 1.48) {
+        pdf.addImage(imgData, "PNG", marginX, marginY, printableW, renderH, undefined, "FAST");
       } else {
         // Multi-page slicing if document is genuinely longer
         const pageCanvasH = (canvas.width * printableH) / printableW;
@@ -1632,6 +1635,25 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
+          #printable-form-sheet .rfwi-sheet {
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            gap: 0 !important;
+            min-height: 285mm !important;
+            height: 285mm !important;
+            overflow: hidden !important;
+            font-size: 8px !important;
+            line-height: 1.1 !important;
+          }
+          #printable-form-sheet .rfwi-section { margin: 0 0 2mm !important; }
+          #printable-form-sheet .rfwi-section-header { padding: 1mm 2mm !important; border-width: 1px !important; font-size: 8px !important; line-height: 10px !important; }
+          #printable-form-sheet .rfwi-table { font-size: 7px !important; line-height: 1.08 !important; }
+          #printable-form-sheet .rfwi-table td, #printable-form-sheet .rfwi-table th { padding: 1mm 1.5mm !important; }
+          #printable-form-sheet .rfwi-table input[type=checkbox] { width: 8px !important; height: 8px !important; margin: 0 2px 0 0 !important; }
+          #printable-form-sheet .rfwi-comments-box { min-height: 11mm !important; height: 11mm !important; padding: 1mm !important; }
+          #printable-form-sheet .rfwi-signature-space { height: 6mm !important; }
+          #printable-form-sheet .rfwi-sheet > div:last-child { padding-top: 0.5mm !important; padding-bottom: 0 !important; font-size: 6px !important; line-height: 8px !important; }
           .no-print {
             display: none !important;
           }
