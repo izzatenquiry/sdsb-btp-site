@@ -294,14 +294,14 @@ export function ModernQualityAnalytics({
 
       {/* Row 2: Trade Surveillance, Discipline Quality Health & Benchmarks (Fills bottom space) */}
       <div className="mt-2 pt-2 border-t border-line/60 flex-1 flex flex-col justify-between min-h-0">
-        <div className="flex items-center justify-between mb-1.5">
+        <div className="flex flex-col gap-0.5 mb-2">
           <div className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-ink">
+            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse shrink-0" />
+            <h4 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-ink">
               Trade Package Surveillance & Quality Benchmarks
             </h4>
           </div>
-          <span className="text-[9.5px] font-mono font-semibold text-muted">
+          <span className="text-[9.5px] font-mono font-medium text-muted pl-3">
             22 Autodesk Construction Cloud Registers Synchronized
           </span>
         </div>
@@ -310,14 +310,14 @@ export function ModernQualityAnalytics({
           {/* Card 1: C&S */}
           <div className="p-2 rounded-lg border border-line bg-paper/50 hover:bg-paper hover:border-accent/40 transition-all flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between gap-1 mb-0.5">
-                <span className="font-extrabold text-[11px] text-ink flex items-center gap-1">
-                  <Building2 className="h-3 w-3 text-sky-500" />
-                  <span>Civil & Structural</span>
+              <div className="flex items-center gap-1.5 mb-1 min-w-0">
+                <Building2 className="h-3.5 w-3.5 text-sky-500 shrink-0" />
+                <span className="font-extrabold text-[11px] text-ink truncate">
+                  Civil & Structural
                 </span>
-                <span className="rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 font-bold text-[9px] px-1 py-0.2 border border-sky-500/20">
-                  {csCount} Rows
-                </span>
+              </div>
+              <div className="w-full text-center py-0.5 px-2 rounded bg-sky-500/10 text-sky-600 dark:text-sky-400 font-bold text-[9.5px] border border-sky-500/20 mb-1.5">
+                {csCount} Rows
               </div>
               <p className="text-[9.5px] text-muted line-clamp-1 mb-1">
                 Precast piles, rebar cage, cube tests & pullouts
@@ -332,14 +332,14 @@ export function ModernQualityAnalytics({
           {/* Card 2: Architectural */}
           <div className="p-2 rounded-lg border border-line bg-paper/50 hover:bg-paper hover:border-accent/40 transition-all flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between gap-1 mb-0.5">
-                <span className="font-extrabold text-[11px] text-ink flex items-center gap-1">
-                  <Layers className="h-3 w-3 text-purple-500" />
-                  <span>Architectural</span>
+              <div className="flex items-center gap-1.5 mb-1 min-w-0">
+                <Layers className="h-3.5 w-3.5 text-purple-500 shrink-0" />
+                <span className="font-extrabold text-[11px] text-ink truncate">
+                  Architectural
                 </span>
-                <span className="rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold text-[9px] px-1 py-0.2 border border-purple-500/20">
-                  {archCount} Rows
-                </span>
+              </div>
+              <div className="w-full text-center py-0.5 px-2 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold text-[9.5px] border border-purple-500/20 mb-1.5">
+                {archCount} Rows
               </div>
               <p className="text-[9.5px] text-muted line-clamp-1 mb-1">
                 TPO waterproofing, downpipes & brickwork
@@ -354,14 +354,14 @@ export function ModernQualityAnalytics({
           {/* Card 3: MEP Infrastructure */}
           <div className="p-2 rounded-lg border border-line bg-paper/50 hover:bg-paper hover:border-accent/40 transition-all flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between gap-1 mb-0.5">
-                <span className="font-extrabold text-[11px] text-ink flex items-center gap-1">
-                  <Zap className="h-3 w-3 text-cyan-500" />
-                  <span>MEP & Critical Infra</span>
+              <div className="flex items-center gap-1.5 mb-1 min-w-0">
+                <Zap className="h-3.5 w-3.5 text-cyan-500 shrink-0" />
+                <span className="font-extrabold text-[11px] text-ink truncate">
+                  MEP & Critical Infra
                 </span>
-                <span className="rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold text-[9px] px-1 py-0.2 border border-cyan-500/20">
-                  {mepCount} Rows
-                </span>
+              </div>
+              <div className="w-full text-center py-0.5 px-2 rounded bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold text-[9.5px] border border-cyan-500/20 mb-1.5">
+                {mepCount} Rows
               </div>
               <p className="text-[9.5px] text-muted line-clamp-1 mb-1">
                 Substation earthing, cable trays & chiller ducting
@@ -376,14 +376,14 @@ export function ModernQualityAnalytics({
           {/* Card 4: Governance & Audits */}
           <div className="p-2 rounded-lg border border-line bg-paper/50 hover:bg-paper hover:border-accent/40 transition-all flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between gap-1 mb-0.5">
-                <span className="font-extrabold text-[11px] text-ink flex items-center gap-1">
-                  <Award className="h-3 w-3 text-emerald-500" />
-                  <span>Governance & ISO</span>
+              <div className="flex items-center gap-1.5 mb-1 min-w-0">
+                <Award className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                <span className="font-extrabold text-[11px] text-ink truncate">
+                  Governance & ISO
                 </span>
-                <span className="rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-[9px] px-1 py-0.2 border border-emerald-500/20">
-                  14 Forms
-                </span>
+              </div>
+              <div className="w-full text-center py-0.5 px-2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-[9.5px] border border-emerald-500/20 mb-1.5">
+                14 Forms
               </div>
               <p className="text-[9.5px] text-muted line-clamp-1 mb-1">
                 Turner · Dayone · SDSB governance bank
