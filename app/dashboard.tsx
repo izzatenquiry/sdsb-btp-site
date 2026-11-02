@@ -770,14 +770,14 @@ export function Dashboard({
                 </div>
 
                 {/* Arrow navigation and category selector tabs */}
-                <div className="flex items-center gap-1.5 max-w-full overflow-x-auto no-scrollbar">
-                  <div className="flex items-center gap-1 bg-paper/60 border border-line rounded-lg p-0.5 shadow-2xs shrink-0">
+                <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto no-scrollbar">
+                  <div className="flex items-center gap-1 bg-paper/60 border border-line rounded-lg p-0.5 shadow-2xs w-full sm:w-auto">
                     {categoryBreakdown.map((cat, idx) => (
                       <button
                         key={cat.category}
                         type="button"
                         onClick={() => setActiveCategorySlide(idx)}
-                        className={`rounded-md px-2 sm:px-2.5 py-1 text-xs font-bold whitespace-nowrap shrink-0 transition cursor-pointer ${
+                        className={`flex-1 sm:flex-initial text-center rounded-md px-2 sm:px-2.5 py-1 text-xs font-bold whitespace-nowrap shrink-0 transition cursor-pointer ${
                           activeCategorySlide === idx
                             ? "bg-accent text-white shadow-xs"
                             : "text-muted hover:text-ink hover:bg-field"
@@ -790,7 +790,7 @@ export function Dashboard({
                     <button
                       type="button"
                       onClick={() => setActiveCategorySlide(3)}
-                      className={`flex items-center gap-1 rounded-md px-2 sm:px-2.5 py-1 text-xs font-bold whitespace-nowrap shrink-0 transition cursor-pointer ${
+                      className={`flex-1 sm:flex-initial text-center flex items-center justify-center gap-1 rounded-md px-2 sm:px-2.5 py-1 text-xs font-bold whitespace-nowrap shrink-0 transition cursor-pointer ${
                         activeCategorySlide === 3
                           ? "bg-accent text-white shadow-xs"
                           : "text-muted hover:text-ink hover:bg-field"
@@ -802,8 +802,8 @@ export function Dashboard({
                     </button>
                   </div>
 
-                  {/* Left and Right Arrow Buttons */}
-                  <div className="flex items-center border border-line rounded-lg bg-paper overflow-hidden shadow-2xs shrink-0">
+                  {/* Left and Right Arrow Buttons - Hidden on Mobile */}
+                  <div className="hidden sm:flex items-center border border-line rounded-lg bg-paper overflow-hidden shadow-2xs shrink-0">
                     <button
                       type="button"
                       onClick={prevCategorySlide}
