@@ -37,7 +37,7 @@ export const MODAL_TITLE_CLASS =
 export const MODAL_SUBTITLE_CLASS = "mt-0.5 text-[10px] text-muted sm:text-xs truncate";
 
 export const MODAL_CLOSE_CLASS =
-  "shrink-0 rounded-lg p-2 text-sm text-muted hover:bg-paper hover:text-ink transition cursor-pointer";
+  "grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-field hover:text-ink transition cursor-pointer text-sm font-bold border border-transparent hover:border-line shrink-0";
 
 export const MODAL_FORM_CLASS = "flex min-h-0 flex-1 flex-col overflow-hidden";
 
@@ -45,7 +45,7 @@ export const MODAL_BODY_CLASS =
   "min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 sm:px-6 sm:py-5";
 
 export const MODAL_FOOTER_CLASS =
-  "shrink-0 border-t border-line bg-paper/50 px-3 py-2 sm:px-6 sm:py-2.5 flex items-center justify-end gap-2";
+  "shrink-0 border-t border-line bg-paper/90 px-3.5 py-2.5 sm:px-6 sm:py-3 flex items-center justify-center gap-2 w-full";
 
 export const MODAL_BTN_CANCEL_CLASS =
   "rounded-lg border border-line bg-paper-elevated px-3 py-2 text-xs font-semibold text-ink transition hover:bg-paper sm:px-4 cursor-pointer";

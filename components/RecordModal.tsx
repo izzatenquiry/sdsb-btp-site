@@ -714,41 +714,41 @@ export function RecordModal({
           </div>
         </div>
 
-        {/* Modal Footer with Two Action Paths */}
-        <div className={`${MODAL_FOOTER_CLASS} flex flex-wrap items-center justify-between gap-2`}>
-          <button
-            type="button"
-            onClick={onClose}
-            className={MODAL_BTN_CANCEL_CLASS}
-            disabled={saving}
-          >
-            Cancel
-          </button>
+        {/* Modal Footer with Equal Ratio Full-Width Buttons */}
+        <div className="shrink-0 border-t border-line bg-paper/95 p-3 sm:px-6 sm:py-3 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full">
+            <button
+              type="button"
+              onClick={onClose}
+              className={`${MODAL_BTN_CANCEL_CLASS} w-full inline-flex items-center justify-center text-center`}
+              disabled={saving}
+            >
+              Cancel
+            </button>
 
-          <div className="flex items-center gap-2">
             <button
               type="submit"
               onClick={() => setSubmitIntent("save")}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-paper px-4 py-2 text-xs font-semibold text-ink shadow-xs hover:border-accent hover:text-accent transition cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-line bg-paper px-3 py-2 text-xs font-bold text-ink shadow-xs hover:border-accent hover:text-accent transition cursor-pointer disabled:opacity-50 w-full text-center"
               disabled={saving}
             >
-              <Check className="h-4 w-4" />
-              <span>{saving && submitIntent === "save" ? "Saving..." : editing ? "Save Changes" : "Register Document Only"}</span>
+              <Check className="h-4 w-4 shrink-0" />
+              <span className="truncate">{saving && submitIntent === "save" ? "Saving..." : editing ? "Save Changes" : "Register Only"}</span>
             </button>
 
             <button
               type="submit"
               onClick={() => setSubmitIntent("saveAndPdf")}
-              className={`${MODAL_BTN_PRIMARY_CLASS} flex items-center gap-1.5 shadow-md`}
+              className={`${MODAL_BTN_PRIMARY_CLASS} inline-flex items-center justify-center gap-1.5 shadow-md w-full text-center`}
               disabled={saving}
             >
-              <Printer className="h-4 w-4" />
-              <span>
+              <Printer className="h-4 w-4 shrink-0" />
+              <span className="truncate">
                 {saving && submitIntent === "saveAndPdf"
                   ? "Generating..."
                   : editing
-                  ? "Save & Open PDF Form"
-                  : "Register & Open PDF Form (A4)"}
+                  ? "Save & Open PDF"
+                  : "Register & PDF (A4)"}
               </span>
             </button>
           </div>

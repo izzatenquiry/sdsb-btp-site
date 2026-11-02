@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { X } from "lucide-react";
 import { CenteredModal, STANDARD_MODAL_PANEL_CLASS } from "./CenteredModal";
 
 interface GoogleSheetLiveModalProps {
@@ -33,10 +32,11 @@ export function GoogleSheetLiveModal({
       <button
         type="button"
         onClick={onClose}
-        className="absolute top-2.5 right-2.5 z-30 flex h-7 w-7 items-center justify-center rounded-full bg-slate-900/60 hover:bg-slate-900 text-white shadow-md backdrop-blur-md transition cursor-pointer"
+        className="absolute top-2.5 right-2.5 z-30 grid h-8 w-8 place-items-center rounded-lg bg-slate-900/80 hover:bg-slate-900 text-white shadow-md backdrop-blur-md transition cursor-pointer text-sm font-bold border border-white/20 shrink-0"
         title="Close Google Sheet Modal"
+        aria-label="Close"
       >
-        <X className="h-4 w-4" />
+        ✕
       </button>
 
       {/* Main View Area: Direct Google Sheet Interface */}

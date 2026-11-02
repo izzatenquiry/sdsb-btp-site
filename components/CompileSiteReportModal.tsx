@@ -336,17 +336,17 @@ export function CompileSiteReportModal({
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-center pt-3 border-t border-line w-full">
               <button
                 type="button"
                 onClick={() => {
                   if (onCompileReport) onCompileReport(reportPreview);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-4 py-2 text-xs font-bold text-white shadow hover:bg-teal-700 transition cursor-pointer"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-teal-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-teal-700 active:scale-95 transition cursor-pointer w-full text-center"
               >
-                <Printer className="h-3.5 w-3.5" />
+                <Printer className="h-4 w-4 shrink-0" />
                 <span>Open Printable Official Report</span>
-                <ChevronRight className="h-3.5 w-3.5" />
+                <ChevronRight className="h-4 w-4 shrink-0" />
               </button>
             </div>
           </div>

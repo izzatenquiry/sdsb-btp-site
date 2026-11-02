@@ -795,18 +795,25 @@ export function ProfileModal({ open, onClose, currentUser, onSave }: Props) {
       </div>
 
       {/* Modal Footer */}
-      <div className="border-t border-line bg-paper/50 px-6 py-3 flex items-center justify-between">
-        <span className="text-xs text-muted">
-          Staff Account: <strong className="text-ink font-semibold">{name}</strong> ({role})
-        </span>
+      <div className="shrink-0 border-t border-line bg-paper/95 p-3 sm:px-6 w-full">
+        <div className="grid grid-cols-2 gap-2 w-full max-w-md mx-auto">
+          <button
+            type="button"
+            onClick={onClose}
+            className={`${MODAL_BTN_CANCEL_CLASS} w-full text-center inline-flex items-center justify-center`}
+          >
+            Cancel
+          </button>
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-lg bg-accent px-5 py-2 text-xs font-bold text-white shadow-md hover:brightness-110 active:scale-95 transition cursor-pointer"
-        >
-          Done
-        </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-bold text-white shadow-md hover:brightness-110 active:scale-95 transition cursor-pointer text-center"
+          >
+            <Check className="h-4 w-4 shrink-0" />
+            <span>Save & Done</span>
+          </button>
+        </div>
       </div>
     </CenteredModal>
 

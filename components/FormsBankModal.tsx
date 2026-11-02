@@ -11,7 +11,6 @@ import {
   ExternalLink,
   ShieldCheck,
   CheckCircle,
-  X,
 } from "lucide-react";
 import {
   CenteredModal,
@@ -21,6 +20,7 @@ import {
   MODAL_TITLE_CLASS,
   MODAL_SUBTITLE_CLASS,
   MODAL_CLOSE_CLASS,
+  MODAL_BTN_CANCEL_CLASS,
 } from "./CenteredModal";
 import {
   GOVERNANCE_FORMS,
@@ -120,10 +120,10 @@ export function FormsBankModal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close modal"
-            className="rounded-lg p-1.5 text-slate-300 hover:bg-white/15 hover:text-white transition cursor-pointer"
+            aria-label="Close"
+            className="grid h-8 w-8 place-items-center rounded-lg text-slate-300 hover:bg-white/15 hover:text-white transition cursor-pointer text-sm font-bold border border-transparent hover:border-white/20 shrink-0"
           >
-            <X className="h-5 w-5" />
+            ✕
           </button>
         </div>
       </div>
@@ -242,14 +242,14 @@ export function FormsBankModal({
       </div>
 
       {/* Footer Info */}
-      <div className="shrink-0 flex items-center justify-between border-t border-line bg-paper/50 px-5 py-2.5 text-xs text-muted">
-        <span className="text-[11px]">
+      <div className="shrink-0 flex flex-col sm:flex-row items-center justify-between gap-2.5 border-t border-line bg-paper/95 p-3 sm:px-6 w-full text-xs text-muted">
+        <span className="text-[11px] text-center sm:text-left">
           Showing {filteredForms.length} of {GOVERNANCE_FORMS.length} standardized governance templates
         </span>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg border border-line bg-paper-elevated px-3 py-1.5 text-xs font-semibold text-ink transition hover:bg-paper cursor-pointer"
+          className={`${MODAL_BTN_CANCEL_CLASS} w-full sm:w-auto text-center inline-flex items-center justify-center`}
         >
           Close
         </button>
