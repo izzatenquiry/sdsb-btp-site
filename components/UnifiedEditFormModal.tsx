@@ -626,14 +626,14 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         allowTaint: true,
         logging: false,
         backgroundColor: "#ffffff",
-        windowWidth: 1000,
-        windowHeight: 2500,
+        windowWidth: 794,
+        windowHeight: 1123,
         scrollX: 0,
         scrollY: 0,
         onclone: (clonedDoc, clonedEl) => {
           const targetEl = (clonedEl || clonedDoc.getElementById("printable-form-sheet")) as HTMLElement | null;
           if (targetEl) {
-            // Force display: block and visibility: visible on targetEl and all its ancestors in clonedDoc
+            // Force display and visibility on all ancestors
             let curr: HTMLElement | null = targetEl;
             while (curr && curr !== clonedDoc.body) {
               curr.style.display = "block";
@@ -643,7 +643,7 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
               curr = curr.parentElement;
             }
 
-            // Clean styling for html2canvas capture without breaking typography
+            // Clean styling matching the live preview
             const style = clonedDoc.createElement("style");
             style.innerHTML = `
               #printable-form-sheet, #printable-form-sheet * {
@@ -701,22 +701,26 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             clonedDoc.body.style.margin = "0";
             clonedDoc.body.style.padding = "0";
             clonedDoc.body.style.background = "#ffffff";
-            clonedDoc.body.style.overflow = "visible";
-            clonedDoc.body.style.height = "auto";
-            clonedDoc.body.style.minHeight = "auto";
+            clonedDoc.body.style.overflow = "hidden";
+            clonedDoc.body.style.width = "794px";
+            clonedDoc.body.style.height = "1123px";
 
+            // Enforce exact 1:1 A4 sheet dimensions matching the screen preview
             targetEl.style.position = "static";
-            targetEl.style.margin = "0 auto";
-            targetEl.style.padding = "0px";
+            targetEl.style.margin = "0";
             targetEl.style.boxSizing = "border-box";
-            targetEl.style.width = "820px";
-            targetEl.style.maxWidth = "820px";
-            targetEl.style.height = "auto";
-            targetEl.style.maxHeight = "none";
-            targetEl.style.overflow = "visible";
+            targetEl.style.width = "794px";
+            targetEl.style.maxWidth = "794px";
+            targetEl.style.height = "1123px";
+            targetEl.style.minHeight = "1123px";
+            targetEl.style.maxHeight = "1123px";
+            targetEl.style.padding = "24px 28px";
             targetEl.style.boxShadow = "none";
             targetEl.style.border = "none";
-            targetEl.style.display = "block";
+            targetEl.style.display = "flex";
+            targetEl.style.flexDirection = "column";
+            targetEl.style.justifyContent = "space-between";
+            targetEl.style.overflow = "hidden";
             targetEl.style.visibility = "visible";
             targetEl.style.opacity = "1";
 
@@ -726,10 +730,7 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         },
       });
 
-      // Auto crop all white margins around the captured form
-      const canvas = autoCropCanvas(rawCanvas);
-
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = rawCanvas.toDataURL("image/png");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -737,56 +738,8 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         compress: true,
       });
 
-      const pageWidth = 210;
-      const pageHeight = 297;
-      const marginX = 3;
-      const isRfwi = selectedTemplateId === "rfwi";
-      const marginY = isRfwi ? 1 : 3;
-      const printableW = pageWidth - marginX * 2; // 204mm
-      const printableH = pageHeight - marginY * 2; // 291mm
-
-      const canvasAspect = canvas.height / canvas.width;
-
-      // Render form preserving natural aspect ratio cleanly on A4
-      const renderH = Math.min(printableH, printableW * canvasAspect);
-      if (canvasAspect <= 1.48) {
-        pdf.addImage(imgData, "PNG", marginX, marginY, printableW, renderH, undefined, "FAST");
-      } else {
-        // Multi-page slicing if document is genuinely longer
-        const pageCanvasH = (canvas.width * printableH) / printableW;
-        let sourceY = 0;
-        let pageIdx = 0;
-
-        while (sourceY < canvas.height) {
-          if (pageIdx > 0) pdf.addPage();
-
-          const sliceH = Math.min(pageCanvasH, canvas.height - sourceY);
-          const tempCanvas = document.createElement("canvas");
-          tempCanvas.width = canvas.width;
-          tempCanvas.height = sliceH;
-          const ctx = tempCanvas.getContext("2d");
-          if (ctx) {
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            ctx.drawImage(
-              canvas,
-              0,
-              sourceY,
-              canvas.width,
-              sliceH,
-              0,
-              0,
-              canvas.width,
-              sliceH
-            );
-            const sliceData = tempCanvas.toDataURL("image/png");
-            const slicePdfH = (sliceH * printableW) / canvas.width;
-            pdf.addImage(sliceData, "PNG", marginX, marginY, printableW, slicePdfH, undefined, "FAST");
-          }
-          sourceY += pageCanvasH;
-          pageIdx++;
-        }
-      }
+      // Exact 1:1 Full Page A4 fit (0,0 to 210mm x 297mm)
+      pdf.addImage(imgData, "PNG", 0, 0, 210, 297, undefined, "FAST");
 
       // Safe filename without invalid characters like / or :
       const safeRef = String(form.refNo || currentTemplate.docNo || "Form")
@@ -1427,7 +1380,10 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
               <div
                 id="printable-form-sheet"
                 ref={printAreaRef}
-                className="w-full max-w-[820px] bg-white text-slate-900 shadow-2xl rounded-sm p-4 sm:p-6 border border-slate-300 dark:border-slate-800 transition-all font-sans leading-normal self-start"
+                className="w-full max-w-[794px] min-h-[1123px] bg-white text-slate-900 shadow-2xl rounded-sm p-6 sm:p-7 border border-slate-300 dark:border-slate-800 transition-all font-sans leading-normal self-start flex flex-col justify-between"
+                style={{
+                  boxSizing: "border-box",
+                }}
               >
                 {selectedTemplateId === "rfwi" && (
                   <RfwiSheet formData={liveFormData} setFormData={setSheetFields} />

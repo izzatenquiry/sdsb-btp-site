@@ -27,7 +27,7 @@ export function RfwiSheet({
   }
 
   return (
-    <div className="space-y-2 sm:space-y-2.5 font-sans leading-tight">
+    <div className="w-full flex-1 flex flex-col justify-between font-sans leading-tight space-y-2">
       <OfficialFormHeader
         title="REQUEST FOR WORK INSPECTION (RFWI) FORM"
         projectName={formData.projectName || "SDSB · BANTING TECHNOLOGY PARK (BTP)"}

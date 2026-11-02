@@ -333,21 +333,28 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             clonedDoc.body.style.margin = "0";
             clonedDoc.body.style.padding = "0";
             clonedDoc.body.style.background = "#ffffff";
-            clonedDoc.body.style.overflow = "visible";
-            clonedDoc.body.style.height = "auto";
-            clonedDoc.body.style.minHeight = "auto";
+            clonedDoc.body.style.overflow = "hidden";
+            clonedDoc.body.style.width = "794px";
+            clonedDoc.body.style.height = "1123px";
 
+            // Enforce exact 1:1 A4 sheet dimensions matching the screen preview
             targetEl.style.position = "static";
-            targetEl.style.margin = "0 auto";
-            targetEl.style.padding = "0px";
+            targetEl.style.margin = "0";
             targetEl.style.boxSizing = "border-box";
-            targetEl.style.width = "820px";
-            targetEl.style.maxWidth = "820px";
-            targetEl.style.height = "auto";
-            targetEl.style.maxHeight = "none";
-            targetEl.style.overflow = "visible";
+            targetEl.style.width = "794px";
+            targetEl.style.maxWidth = "794px";
+            targetEl.style.height = "1123px";
+            targetEl.style.minHeight = "1123px";
+            targetEl.style.maxHeight = "1123px";
+            targetEl.style.padding = "24px 28px";
             targetEl.style.boxShadow = "none";
             targetEl.style.border = "none";
+            targetEl.style.display = "flex";
+            targetEl.style.flexDirection = "column";
+            targetEl.style.justifyContent = "space-between";
+            targetEl.style.overflow = "hidden";
+            targetEl.style.visibility = "visible";
+            targetEl.style.opacity = "1";
 
             clonedDoc.body.innerHTML = "";
             clonedDoc.body.appendChild(targetEl);
@@ -355,10 +362,7 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         },
       });
 
-      // Auto crop any empty white margin around the form
-      const canvas = autoCropCanvas(rawCanvas);
-
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = rawCanvas.toDataURL("image/png");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -366,53 +370,8 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         compress: true,
       });
 
-      const pageWidth = 210;
-      const pageHeight = 297;
-      const marginX = 3;
-      const marginY = 3;
-      const printableW = pageWidth - marginX * 2; // 204mm
-      const printableH = pageHeight - marginY * 2; // 291mm
-
-      const canvasAspect = canvas.height / canvas.width;
-
-      // Fit form to maximum full height from top to bottom
-      if (canvasAspect <= 1.8) {
-        pdf.addImage(imgData, "PNG", marginX, marginY, printableW, printableH, undefined, "FAST");
-      } else {
-        const pageCanvasH = (canvas.width * printableH) / printableW;
-        let sourceY = 0;
-        let pageIdx = 0;
-
-        while (sourceY < canvas.height) {
-          if (pageIdx > 0) pdf.addPage();
-
-          const sliceH = Math.min(pageCanvasH, canvas.height - sourceY);
-          const tempCanvas = document.createElement("canvas");
-          tempCanvas.width = canvas.width;
-          tempCanvas.height = sliceH;
-          const ctx = tempCanvas.getContext("2d");
-          if (ctx) {
-            ctx.fillStyle = "#ffffff";
-            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            ctx.drawImage(
-              canvas,
-              0,
-              sourceY,
-              canvas.width,
-              sliceH,
-              0,
-              0,
-              canvas.width,
-              sliceH
-            );
-            const sliceData = tempCanvas.toDataURL("image/png");
-            const slicePdfH = (sliceH * printableW) / canvas.width;
-            pdf.addImage(sliceData, "PNG", marginX, marginY, printableW, slicePdfH, undefined, "FAST");
-          }
-          sourceY += pageCanvasH;
-          pageIdx++;
-        }
-      }
+      // Exact 1:1 Full Page A4 fit (0,0 to 210mm x 297mm)
+      pdf.addImage(imgData, "PNG", 0, 0, 210, 297, undefined, "FAST");
 
       const filename = `${template.code}_${formData.refNo || "Form"}.pdf`
         .replace(/[/\\?%*:|"<>]/g, "-")
