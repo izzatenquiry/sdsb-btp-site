@@ -618,9 +618,7 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             visibility: hidden !important;
           }
           div[role="dialog"],
-          .fixed,
-          .relative,
-          .flex {
+          div[role="dialog"] > div {
             position: static !important;
             display: block !important;
             transform: none !important;
