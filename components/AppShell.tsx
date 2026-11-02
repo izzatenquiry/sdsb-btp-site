@@ -114,7 +114,7 @@ export function AppShell({
               SDSB · BTP DATA PARK
             </p>
             <p className="truncate text-[10px] text-slate-400">
-              SDSB QAQC Control Centre · {userName} (Admin)
+              QAQC Control Centre · {userName} ({userRole})
             </p>
           </button>
 
