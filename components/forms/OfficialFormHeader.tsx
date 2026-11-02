@@ -14,7 +14,7 @@ export function OfficialFormHeader({
   date?: string;
 }) {
   return (
-    <table className="w-full border-2 border-black border-collapse table-fixed bg-white text-black mb-2 font-sans">
+    <table className="w-full border-2 border-black border-collapse table-fixed bg-white text-black mb-1.5 font-sans">
       <tbody>
         <tr>
           {/* Left Cell: SDSB (Shengding) Logo - Centered in box */}
