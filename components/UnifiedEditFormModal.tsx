@@ -872,75 +872,32 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
 
       {/* Top Main Header */}
       <div className="shrink-0 border-b border-line bg-paper/90 px-3.5 py-2.5 sm:px-6 sm:py-3 flex flex-col gap-1.5 sm:gap-2">
-        {/* Row 1: Badges on left, Quick Action tools on right */}
+        {/* Row 1: Badges strictly sebaris on left, Close button on right */}
         <div className="flex items-center justify-between gap-2">
-          {/* Status Badges */}
-          <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
-            <span className="rounded bg-accent/15 px-2 py-0.5 text-[10px] font-bold text-accent-bright border border-accent/25 whitespace-nowrap">
+          {/* Status Badges - Strictly sebaris */}
+          <div className="flex items-center gap-1.5 flex-nowrap overflow-x-auto no-scrollbar py-0.5">
+            <span className="rounded bg-accent/15 px-2 py-0.5 text-[10px] font-bold text-accent-bright border border-accent/25 whitespace-nowrap shrink-0">
               {editing ? "EDIT RECORD & FORM" : "NEW RECORD & FORM"}
             </span>
-            <span className="rounded bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-500/25 flex items-center gap-1 whitespace-nowrap">
+            <span className="rounded bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-500/25 flex items-center gap-1 whitespace-nowrap shrink-0">
               <Clock className="h-3 w-3 shrink-0" />
               <span>STATUS: {form.status.toUpperCase()}</span>
             </span>
-            <span className="rounded bg-teal-500/15 px-2 py-0.5 text-[10px] font-bold text-teal-700 dark:text-teal-300 border border-teal-500/25 hidden sm:inline-flex items-center gap-1 whitespace-nowrap">
+            <span className="rounded bg-teal-500/15 px-2 py-0.5 text-[10px] font-bold text-teal-700 dark:text-teal-300 border border-teal-500/25 hidden sm:inline-flex items-center gap-1 whitespace-nowrap shrink-0">
               <Sparkles className="h-3 w-3 shrink-0" />
               LIVE SYNC
             </span>
           </div>
 
-          {/* Quick Action Tools */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            {/* Scancopy quick toggle (Desktop) */}
-            <button
-              type="button"
-              onClick={() => setPreviewMode((prev) => (prev === "scancopy" ? "form" : "scancopy"))}
-              title={scancopyMeta ? "View signed scancopy PDF" : "Attach/preview scancopy"}
-              className={`hidden md:inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition cursor-pointer shadow-xs ${
-                previewMode === "scancopy"
-                  ? "bg-rose-600 text-white border-rose-600 shadow-rose-600/30"
-                  : scancopyMeta
-                  ? "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-600 hover:text-white"
-                  : "border-line bg-paper text-muted hover:border-accent hover:text-accent"
-              }`}
-            >
-              <FileCheck2 className="h-3.5 w-3.5 text-rose-400" />
-              <span>{previewMode === "scancopy" ? "Live Form (Open)" : "Scancopy (Closed)"}</span>
-            </button>
-
-            {/* Print button (desktop only) */}
-            <button
-              type="button"
-              onClick={handlePrint}
-              title="Print directly"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-line bg-paper px-2.5 py-1 text-xs font-semibold text-ink hover:border-accent hover:bg-field transition cursor-pointer"
-            >
-              <Printer className="h-3.5 w-3.5 text-accent" />
-              <span className="hidden md:inline">Print</span>
-            </button>
-
-            {/* Download PDF button */}
-            <button
-              type="button"
-              disabled={downloading}
-              onClick={handleDownloadPdf}
-              title="Download high-resolution A4 PDF"
-              className="inline-flex items-center gap-1 rounded-lg bg-accent px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:brightness-110 disabled:opacity-60 transition cursor-pointer whitespace-nowrap"
-            >
-              <Download className="h-3.5 w-3.5 shrink-0" />
-              <span>{downloading ? "Exporting..." : "PDF (A4)"}</span>
-            </button>
-
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:bg-field hover:text-ink transition cursor-pointer text-sm font-bold border border-transparent hover:border-line"
-              aria-label="Close modal"
-            >
-              ✕
-            </button>
-          </div>
+          {/* Top Right: Close Button ONLY */}
+          <button
+            type="button"
+            onClick={onClose}
+            className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:bg-field hover:text-ink transition cursor-pointer text-sm font-bold border border-transparent hover:border-line shrink-0"
+            aria-label="Close modal"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Row 2: Full-width Title & Subtitle */}
@@ -1350,14 +1307,26 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-accent/25 hover:brightness-110 disabled:opacity-60 transition cursor-pointer"
-              >
-                <Save className="h-3.5 w-3.5" />
-                <span>{saving ? "Saving Changes..." : "Save Changes"}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={downloading}
+                  onClick={handleDownloadPdf}
+                  title="Download high-resolution A4 PDF"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2 text-xs font-bold text-accent hover:bg-accent/20 transition cursor-pointer whitespace-nowrap"
+                >
+                  <Download className="h-3.5 w-3.5 shrink-0" />
+                  <span>{downloading ? "Exporting..." : "PDF (A4)"}</span>
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-accent/25 hover:brightness-110 disabled:opacity-60 transition cursor-pointer whitespace-nowrap"
+                >
+                  <Save className="h-3.5 w-3.5 shrink-0" />
+                  <span>{saving ? "Saving Changes..." : "Save Changes"}</span>
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -1370,45 +1339,45 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         >
           
           {/* Top Preview Toolbar */}
-          <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 border-b border-line bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs px-4 py-2 text-xs">
-            
-            {/* Left: Mode Tabs & Template Selector */}
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Tab Selector */}
-              <div className="inline-flex items-center gap-1 p-0.5 rounded-lg bg-slate-200/80 dark:bg-slate-800 border border-line">
+          <div className="shrink-0 flex flex-col gap-2 border-b border-line bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs p-2.5 sm:px-4 sm:py-2 text-xs">
+            {/* Mode Tabs & Template Selector */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
+              {/* Tab Selector: Centered 50/50 ratio */}
+              <div className="w-full sm:w-auto flex items-center p-0.5 rounded-lg bg-slate-200/80 dark:bg-slate-800 border border-line">
                 <button
                   type="button"
                   onClick={() => setPreviewMode("form")}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer whitespace-nowrap shrink-0 ${
+                  className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition cursor-pointer text-center whitespace-nowrap ${
                     previewMode === "form"
                       ? "bg-white dark:bg-slate-700 text-accent shadow-xs"
                       : "text-muted hover:text-ink"
                   }`}
                 >
-                  <Eye className="h-3.5 w-3.5" />
+                  <Eye className="h-3.5 w-3.5 shrink-0" />
                   <span>1. Live Form (Open)</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setPreviewMode("scancopy")}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-md transition cursor-pointer whitespace-nowrap shrink-0 ${
+                  className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition cursor-pointer text-center whitespace-nowrap ${
                     previewMode === "scancopy"
                       ? "bg-rose-600 text-white shadow-xs"
                       : "text-rose-600 dark:text-rose-400 hover:bg-rose-500/10"
                   }`}
                 >
-                  <FileCheck2 className="h-3.5 w-3.5" />
+                  <FileCheck2 className="h-3.5 w-3.5 shrink-0" />
                   <span>2. Scancopy (Closed)</span>
                 </button>
               </div>
 
+              {/* Template Dropdown: FULL WIDTH */}
               {previewMode === "form" && (
-                <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-slate-700 dark:text-slate-300 text-xs hidden sm:inline">
+                <div className="flex-1 w-full flex items-center gap-1.5 min-w-0">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300 text-xs hidden md:inline shrink-0">
                     Sheet:
                   </span>
                   <select
-                    className="rounded-md border border-line bg-field px-2 py-1 text-xs font-semibold text-ink max-w-[200px] truncate"
+                    className="w-full rounded-md border border-line bg-field px-2.5 py-1.5 text-xs font-semibold text-ink"
                     value={selectedTemplateId}
                     onChange={(e) => setSelectedTemplateId(e.target.value)}
                   >
@@ -1422,37 +1391,16 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
               )}
             </div>
 
-            {/* Right: Status indicator */}
-            <div className="flex items-center gap-3 text-[11px] text-muted font-medium">
-              {previewMode === "form" ? (
-                <>
-                  <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    Live Synced Preview
-                  </span>
-                  <span className="hidden sm:inline text-slate-400">|</span>
-                  <span className="hidden sm:inline">A4 Portrait (210 × 297 mm)</span>
-                </>
-              ) : (
-                <div className="flex items-center gap-2">
-                  {scancopyMeta ? (
-                    <>
-                      <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-semibold">
-                        <FileCheck2 className="h-3.5 w-3.5" />
-                        Signed Evidence Attached
-                      </span>
-                      <span className="text-slate-400">|</span>
-                      <span>{(scancopyMeta.fileSize / 1024).toFixed(1)} KB</span>
-                    </>
-                  ) : (
-                    <span className="text-amber-600 dark:text-amber-400 font-semibold">
-                      No Scancopy Attached Yet
-                    </span>
-                  )}
-                </div>
-              )}
+            {/* Status indicator row */}
+            <div className="flex items-center justify-between gap-2 text-[11px] text-muted font-medium pt-0.5">
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                {previewMode === "form" ? "Live Synced Preview" : "Signed Scancopy Mode"}
+              </span>
+              <span className="hidden sm:inline text-slate-400">A4 Portrait (210 × 297 mm)</span>
             </div>
           </div>
+
 
           {/* Preview Canvas: Either A4 Sheet OR Scancopy PDF */}
           <div className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 lg:p-8 flex justify-center bg-slate-100 dark:bg-slate-950/70">
