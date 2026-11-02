@@ -111,6 +111,9 @@ export function UnifiedEditFormModal({
   const [scancopyDoc, setScancopyDoc] = useState<ScancopyRecord | null>(null);
   const [loadingScancopyDoc, setLoadingScancopyDoc] = useState(false);
 
+  // Mobile View: "form" for editing fields, "preview" for live A4 document view
+  const [mobileView, setMobileView] = useState<"form" | "preview">("form");
+
   // Form edit fields
   const [form, setForm] = useState<FormValue>(blankForm());
 
@@ -181,6 +184,8 @@ export function UnifiedEditFormModal({
 
     if (!open) return;
     if (!justOpened && !editingChanged) return;
+
+    setMobileView("form");
 
     if (editing) {
       const sub = editing.subcategory || editing.sourceSheet || defaultSubcategory || "RFWI A C&S";
@@ -866,96 +871,119 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
       <div className={MODAL_ACCENT_CLASS} />
 
       {/* Top Main Header */}
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line bg-paper/60 px-4 py-3 sm:px-6">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2 mb-0.5">
-            <span className="rounded bg-accent/15 px-2 py-0.5 text-[10px] font-bold text-accent-bright border border-accent/25">
-              {editing ? "EDIT RECORD & LIVE FORM" : "NEW RECORD & FORM"}
+      <div className="shrink-0 border-b border-line bg-paper/90 px-3.5 py-2.5 sm:px-6 sm:py-3 flex flex-col gap-1.5 sm:gap-2">
+        {/* Row 1: Badges on left, Quick Action tools on right */}
+        <div className="flex items-center justify-between gap-2">
+          {/* Status Badges */}
+          <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+            <span className="rounded bg-accent/15 px-2 py-0.5 text-[10px] font-bold text-accent-bright border border-accent/25 whitespace-nowrap">
+              {editing ? "EDIT RECORD & FORM" : "NEW RECORD & FORM"}
             </span>
-            <span className="rounded bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-500/25 flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              STATUS: {form.status.toUpperCase()}
+            <span className="rounded bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-500/25 flex items-center gap-1 whitespace-nowrap">
+              <Clock className="h-3 w-3 shrink-0" />
+              <span>STATUS: {form.status.toUpperCase()}</span>
             </span>
-            <span className="rounded bg-teal-500/15 px-2 py-0.5 text-[10px] font-bold text-teal-700 dark:text-teal-300 border border-teal-500/25 hidden sm:inline-flex items-center gap-1">
-              <Sparkles className="h-3 w-3" />
-              LIVE PREVIEW SYNC
+            <span className="rounded bg-teal-500/15 px-2 py-0.5 text-[10px] font-bold text-teal-700 dark:text-teal-300 border border-teal-500/25 hidden sm:inline-flex items-center gap-1 whitespace-nowrap">
+              <Sparkles className="h-3 w-3 shrink-0" />
+              LIVE SYNC
             </span>
           </div>
-          <h2 id="unified-edit-form-title" className="text-base sm:text-lg font-bold text-ink truncate tracking-tight">
+
+          {/* Quick Action Tools */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Scancopy quick toggle (Desktop) */}
+            <button
+              type="button"
+              onClick={() => setPreviewMode((prev) => (prev === "scancopy" ? "form" : "scancopy"))}
+              title={scancopyMeta ? "View signed scancopy PDF" : "Attach/preview scancopy"}
+              className={`hidden md:inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition cursor-pointer shadow-xs ${
+                previewMode === "scancopy"
+                  ? "bg-rose-600 text-white border-rose-600 shadow-rose-600/30"
+                  : scancopyMeta
+                  ? "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-600 hover:text-white"
+                  : "border-line bg-paper text-muted hover:border-accent hover:text-accent"
+              }`}
+            >
+              <FileCheck2 className="h-3.5 w-3.5 text-rose-400" />
+              <span>{previewMode === "scancopy" ? "Live Form Sheet" : "Preview Scancopy"}</span>
+              {scancopyMeta && (
+                <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${previewMode === "scancopy" ? "bg-white text-rose-700" : "bg-rose-500 text-white"}`}>
+                  PDF
+                </span>
+              )}
+            </button>
+
+            {/* Print button (desktop only) */}
+            <button
+              type="button"
+              onClick={handlePrint}
+              title="Print directly"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-line bg-paper px-2.5 py-1 text-xs font-semibold text-ink hover:border-accent hover:bg-field transition cursor-pointer"
+            >
+              <Printer className="h-3.5 w-3.5 text-accent" />
+              <span className="hidden md:inline">Print</span>
+            </button>
+
+            {/* Download PDF button */}
+            <button
+              type="button"
+              disabled={downloading}
+              onClick={handleDownloadPdf}
+              title="Download high-resolution A4 PDF"
+              className="inline-flex items-center gap-1 rounded-lg bg-accent px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:brightness-110 disabled:opacity-60 transition cursor-pointer whitespace-nowrap"
+            >
+              <Download className="h-3.5 w-3.5 shrink-0" />
+              <span>{downloading ? "Exporting..." : "PDF (A4)"}</span>
+            </button>
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:bg-field hover:text-ink transition cursor-pointer text-sm font-bold border border-transparent hover:border-line"
+              aria-label="Close modal"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* Row 2: Full-width Title & Subtitle */}
+        <div className="min-w-0">
+          <h2 id="unified-edit-form-title" className="text-sm sm:text-base font-bold text-ink truncate tracking-tight">
             {form.refNo ? `${form.refNo} — ${currentTemplate.title}` : currentTemplate.title}
           </h2>
           <p className="text-[11px] text-muted truncate">
             {editing
-              ? `Source: ${editing.sourceSheet}${editing.sourceRow ? ` · Row ${editing.sourceRow}` : ""} · Changes made on the left reflect immediately in the official A4 form.`
-              : "Fill in the record fields on the left to see live updates in the official A4 form preview."}
+              ? `Source: ${editing.sourceSheet}${editing.sourceRow ? ` · Row ${editing.sourceRow}` : ""} · Live A4 sync active.`
+              : "Isi maklumat rekod di bawah untuk auto-kemaskini borang rasmi A4."}
           </p>
         </div>
+      </div>
 
-        {/* Top Right Quick Action Tools */}
-        <div className="flex items-center gap-2 shrink-0">
+      {/* Mobile Tab Switcher (lg:hidden) */}
+      <div className="flex items-center justify-center px-3.5 py-1.5 border-b border-line bg-field/60 lg:hidden shrink-0">
+        <div className="inline-flex rounded-lg border border-line bg-paper p-0.5 w-full text-xs font-bold shadow-2xs">
           <button
             type="button"
-            onClick={() => setPreviewMode((prev) => (prev === "scancopy" ? "form" : "scancopy"))}
-            title={scancopyMeta ? "View signed scancopy PDF in preview pane" : "Attach and preview scancopy in preview pane"}
-            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition cursor-pointer shadow-xs ${
-              previewMode === "scancopy"
-                ? "bg-rose-600 text-white border-rose-600 shadow-rose-600/30"
-                : scancopyMeta
-                ? "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-600 hover:text-white"
-                : "border-line bg-paper text-muted hover:border-accent hover:text-accent"
+            onClick={() => setMobileView("form")}
+            className={`flex-1 py-1 rounded-md transition text-center cursor-pointer flex items-center justify-center gap-1.5 ${
+              mobileView === "form" ? "bg-accent text-white shadow-xs" : "text-muted hover:text-ink"
             }`}
           >
-            <FileCheck2 className="h-3.5 w-3.5 text-rose-400" />
-            <span>{previewMode === "scancopy" ? "Live Form Sheet" : "Preview Scancopy"}</span>
-            {scancopyMeta && (
-              <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${previewMode === "scancopy" ? "bg-white text-rose-700" : "bg-rose-500 text-white"}`}>
-                PDF
-              </span>
-            )}
+            <FileText className="h-3.5 w-3.5" />
+            <span>1. Form Entry</span>
           </button>
-
           <button
             type="button"
-            onClick={handlePrint}
-            title="Print directly"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-paper px-2.5 py-1.5 text-xs font-semibold text-ink hover:border-accent hover:bg-field transition cursor-pointer"
+            onClick={() => setMobileView("preview")}
+            className={`flex-1 py-1 rounded-md transition text-center cursor-pointer flex items-center justify-center gap-1.5 ${
+              mobileView === "preview" ? "bg-accent text-white shadow-xs" : "text-muted hover:text-ink"
+            }`}
           >
-            <Printer className="h-3.5 w-3.5 text-accent" />
-            <span className="hidden md:inline">Print</span>
-          </button>
-
-          <button
-            type="button"
-            disabled={downloading}
-            onClick={handleDownloadPdf}
-            title="Download high-resolution A4 PDF"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:brightness-110 disabled:opacity-60 transition cursor-pointer"
-          >
-            <Download className="h-3.5 w-3.5" />
-            <span>{downloading ? "Exporting..." : "PDF (A4)"}</span>
-          </button>
-
-          <a
-            href={`/api/templates/download?id=${currentTemplate.id}`}
-            download
-            title={`Download original template (${currentTemplate.fileFormat.toUpperCase()})`}
-            className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-line bg-paper px-2.5 py-1.5 text-xs font-semibold text-muted hover:text-ink hover:border-accent transition"
-          >
-            {currentTemplate.fileFormat === "xlsx" ? (
-              <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-            ) : (
-              <FileText className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-            )}
-            <span className="hidden lg:inline">{currentTemplate.fileFormat.toUpperCase()}</span>
-          </a>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className={MODAL_CLOSE_CLASS}
-            aria-label="Close modal"
-          >
-            ✕
+            <Eye className="h-3.5 w-3.5" />
+            <span>2. Live A4 Preview</span>
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
           </button>
         </div>
       </div>
@@ -964,9 +992,13 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
       <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
         
         {/* ================= LEFT PANE: EDIT FORM ================= */}
-        <div className="w-full lg:w-[460px] xl:w-[490px] shrink-0 border-b lg:border-b-0 lg:border-r border-line bg-paper/40 flex flex-col min-h-0">
+        <div
+          className={`w-full lg:w-[460px] xl:w-[490px] shrink-0 border-b lg:border-b-0 lg:border-r border-line bg-paper/40 flex-col min-h-0 flex-1 lg:flex-initial ${
+            mobileView === "form" ? "flex" : "hidden lg:flex"
+          }`}
+        >
           
-          <div className="shrink-0 flex items-center justify-between border-b border-line bg-field/40 px-4 py-2 text-xs font-bold text-ink uppercase tracking-wide">
+          <div className="shrink-0 hidden lg:flex items-center justify-between border-b border-line bg-field/40 px-4 py-2 text-xs font-bold text-ink uppercase tracking-wide">
             <span className="flex items-center gap-1.5 text-accent">
               <FileText className="h-3.5 w-3.5" />
               1. Form & Record Data
@@ -974,8 +1006,8 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             <span className="text-[10px] text-muted font-normal">Realtime Sync Active</span>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
-            <div className="flex-1 overflow-y-auto overscroll-contain p-4 space-y-3.5 text-xs">
+          <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3.5 sm:p-4 space-y-3.5 text-xs touch-pan-y">
               {error && (
                 <div className="rounded-lg border border-red-200 bg-red-50 p-2.5 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
                   {error}
@@ -1315,7 +1347,7 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
             </div>
 
             {/* Left Column Sticky Save Actions */}
-            <div className="shrink-0 border-t border-line bg-paper/70 p-3 sm:px-4 flex items-center justify-between gap-2">
+            <div className="shrink-0 border-t border-line bg-paper/95 backdrop-blur-xs p-3 sm:px-4 flex items-center justify-between gap-2 z-10">
               <button
                 type="button"
                 onClick={onClose}
@@ -1336,7 +1368,11 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
         </div>
 
         {/* ================= RIGHT PANE: LIVE PREVIEW FORM & SCANCOPY ================= */}
-        <div className="flex-1 min-h-0 bg-slate-100 dark:bg-slate-950/80 flex flex-col overflow-hidden">
+        <div
+          className={`flex-1 min-h-0 bg-slate-100 dark:bg-slate-950/80 flex-col overflow-hidden ${
+            mobileView === "preview" ? "flex" : "hidden lg:flex"
+          }`}
+        >
           
           {/* Top Preview Toolbar */}
           <div className="shrink-0 flex flex-wrap items-center justify-between gap-2 border-b border-line bg-white/70 dark:bg-slate-900/70 backdrop-blur-xs px-4 py-2 text-xs">
