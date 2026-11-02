@@ -454,7 +454,7 @@ export function ProfileModal({ open, onClose, currentUser, onSave }: Props) {
                 title="Create New Daily Site Report"
               >
                 <Plus className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">+ New DSR</span>
+                <span className="truncate">New DSR</span>
               </button>
 
               <button

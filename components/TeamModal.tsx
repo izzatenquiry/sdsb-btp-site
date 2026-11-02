@@ -769,7 +769,7 @@ export function TeamModal({ open, onClose }: Props) {
                   className="inline-flex items-center gap-1 rounded-lg bg-accent px-2.5 py-1 text-xs font-semibold text-white shadow-xs hover:brightness-110 cursor-pointer transition"
                 >
                   <Plus className="h-3 w-3" />
-                  <span>+ Add Staff</span>
+                  <span>Add Staff</span>
                 </button>
               </div>
             </div>

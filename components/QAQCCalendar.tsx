@@ -216,7 +216,7 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
                 title="Buka Kalendar DSR & Log Aktiviti Harian Staf"
               >
                 <Plus className="h-3.5 w-3.5 text-accent" />
-                <span>+ New DSR</span>
+                <span>New DSR</span>
               </button>
             )}
 
@@ -227,7 +227,7 @@ export function QAQCCalendar({ records, onSelectRecord, onOpenNewRecord, onOpenD
                 className="inline-flex items-center justify-center gap-1 rounded-lg bg-accent px-3 py-1.5 sm:py-1 text-xs font-bold text-white shadow-xs hover:bg-accent-bright transition cursor-pointer whitespace-nowrap"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>+ New Register</span>
+                <span>New Register</span>
               </button>
             )}
           </div>
