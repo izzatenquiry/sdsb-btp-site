@@ -80,7 +80,7 @@ export const INITIAL_ORG_MEMBERS: TeamMember[] = [
     discipline: "DOCUMENT & AUDIT",
     level: "dc",
     packageOrBlock: "Direct to QAQC Manager",
-    position: "Lead Document Controller & QAQC Admin",
+    position: "QAQC DC",
     phone: "+60 12-345 6789",
     email: "damia@banting-datapark.com",
     status: "ETA 2/11/2026",

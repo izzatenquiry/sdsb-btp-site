@@ -497,7 +497,7 @@ export function buildDsrWhatsAppText(dsr: DsrRecord): string {
     `*Tomorrow Plan:*`,
     `${dsr.tomorrowPlan}`,
     ``,
-    `_Prepared by: ${dsr.preparedBy} (SDSB Document Controller & QAQC Admin)_`,
+    `_Prepared by: ${dsr.preparedBy} (SDSB QAQC DC)_`,
   ];
 
   return parts.join("\n");

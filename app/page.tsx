@@ -28,6 +28,14 @@ export default function Home() {
           if (savedProfile?.name && typeof savedProfile.name === "string" && savedProfile.name.trim()) {
             parsed.name = savedProfile.name.trim();
           }
+          if (savedProfile?.role && typeof savedProfile.role === "string" && savedProfile.role.trim()) {
+            parsed.role = savedProfile.role.trim();
+          } else if (key === "damia") {
+            parsed.role = "QAQC DC";
+          }
+          if (key === "damia" && (!parsed.role || parsed.role.includes("Document Controller & QAQC Admin"))) {
+            parsed.role = "QAQC DC";
+          }
           setCurrentUser(parsed);
         }
       }

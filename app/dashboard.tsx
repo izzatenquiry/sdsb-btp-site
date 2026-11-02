@@ -179,11 +179,27 @@ export function Dashboard({
     if (initialUser) {
       const key = normalizeKey(initialUser.email || initialUser.name || "damia");
       const saved = getSavedStaffProfile(key);
-      if (saved?.name && typeof saved.name === "string" && saved.name.trim()) {
-        setCurrentUser({ ...initialUser, name: saved.name.trim() });
-      } else {
-        setCurrentUser(initialUser);
+      const effectiveName =
+        (saved?.name && typeof saved.name === "string" && saved.name.trim()) ||
+        initialUser.name ||
+        "Nur Damia";
+      let effectiveRole =
+        (saved?.role && typeof saved.role === "string" && saved.role.trim()) ||
+        initialUser.role ||
+        "QAQC DC";
+      if (key === "damia" && (!effectiveRole || effectiveRole.includes("Document Controller & QAQC Admin"))) {
+        effectiveRole = "QAQC DC";
       }
+      const effectiveEmail =
+        (saved?.email && typeof saved.email === "string" && saved.email.trim()) ||
+        initialUser.email;
+
+      setCurrentUser({
+        ...initialUser,
+        name: effectiveName,
+        role: effectiveRole,
+        email: effectiveEmail,
+      });
     }
   }, [initialUser]);
 

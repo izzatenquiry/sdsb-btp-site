@@ -93,8 +93,8 @@ function getMonthName(monthNumber: number): string {
 export function StaffDailyReportModal({
   open,
   onClose,
-  userName = "NUR DAMIA BT SHAFEE",
-  userRole = "Document Controller & QAQC Admin",
+  userName = "Nur Damia",
+  userRole = "QAQC DC",
   onOpenCreateDsr,
   onOpenViewDsr,
   onOpenCompile,

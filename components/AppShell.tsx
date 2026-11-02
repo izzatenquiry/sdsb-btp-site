@@ -47,8 +47,8 @@ export function AppShell({
   lastUpdated,
   snapshotAsOf = "2026-10-30",
   sourceFile = "QAQC Summarylist Banting Data Park - Grouped Tabs.xlsx",
-  userName = "NUR DAMIA BT SHAFEE",
-  userRole = "Document Controller / Admin",
+  userName = "Nur Damia",
+  userRole = "QAQC DC",
   onLogout,
 }: Props) {
   const [now, setNow] = useState<Date | null>(null);

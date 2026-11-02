@@ -65,9 +65,9 @@ export type UserProfile = {
 };
 
 export const DEFAULT_PROFILE: UserProfile = {
-  name: "NUR DAMIA BT SHAFEE",
-  role: "Document Controller & QAQC Admin",
-  position: "System Administrator & Lead Document Controller",
+  name: "Nur Damia",
+  role: "QAQC DC",
+  position: "QAQC DC",
   email: "damia.sdsbbtp@gmail.com",
   phone: "+60 12-345 6789",
   company: "SHENGDING CONSTRUCTION SDN BHD (SDSB)",
@@ -514,7 +514,7 @@ export function ProfileModal({ open, onClose, currentUser, onSave }: Props) {
                       value={role}
                       onChange={(e) => setRole(e.target.value)}
                       required
-                      placeholder="e.g. Document Controller & QAQC Admin"
+                      placeholder="e.g. QAQC DC"
                       className="w-full bg-transparent text-xs text-ink font-semibold outline-none"
                     />
                   </div>

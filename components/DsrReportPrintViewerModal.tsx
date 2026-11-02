@@ -235,7 +235,7 @@ export function DsrReportPrintViewerModal({
                   </div>
                   <div>
                     <p className="font-bold text-[11px] text-slate-900">{dsr.preparedBy}</p>
-                    <p className="text-[9px] text-slate-600">Document Controller & QAQC Admin</p>
+                    <p className="text-[9px] text-slate-600">QAQC DC</p>
                     <p className="text-[9px] text-slate-500">SHENGDING CONSTRUCTION SDN BHD</p>
                   </div>
                 </div>
@@ -422,7 +422,7 @@ export function DsrReportPrintViewerModal({
                   <p className="text-[10px] font-bold text-slate-600 uppercase">COMPILED BY:</p>
                   <p className="font-serif italic text-sm mt-4">{compiledReport.compiledBy}</p>
                   <p className="font-bold text-[11px] mt-1">{compiledReport.compiledBy}</p>
-                  <p className="text-[9px] text-slate-600">Lead Document Controller & QAQC Admin</p>
+                  <p className="text-[9px] text-slate-600">QAQC DC</p>
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-slate-600 uppercase">ACKNOWLEDGED BY CONSULTANT RE:</p>
