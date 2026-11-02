@@ -401,13 +401,10 @@ export function DarSiteFormModal({
               <span className="font-mono text-[11px] font-bold text-accent bg-accent/15 px-2 py-0.5 rounded border border-accent/25 whitespace-nowrap">
                 {refNo}
               </span>
-              <span className="text-[10px] text-muted truncate hidden sm:inline">
-                SHENGDING CONSTRUCTION SDN BHD (SDSB) · BTP QAQC Control
+              <span className="text-[10px] text-muted truncate">
+                BTP QAQC Official Daily Record
               </span>
             </div>
-            <p className="text-[10px] text-muted truncate sm:hidden mt-0.5">
-              SHENGDING CONSTRUCTION SDN BHD (SDSB)
-            </p>
           </div>
         </div>
 

@@ -72,7 +72,7 @@ export function DsrReportPrintViewerModal({
               {title}
             </h3>
             <p className={MODAL_SUBTITLE_CLASS}>
-              Official SDSB Quality Documentation · 1:1 High-Resolution Print Engine
+              Official Quality Documentation · 1:1 High-Resolution Print Engine
             </p>
           </div>
         </div>

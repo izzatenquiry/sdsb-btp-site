@@ -366,7 +366,7 @@ export function ProfileModal({ open, onClose, currentUser, onSave }: Props) {
               </span>
             </div>
             <p className={MODAL_SUBTITLE_CLASS}>
-              {role || profile.role} · {company || profile.company}
+              {role || profile.role}
             </p>
           </div>
         </div>

@@ -281,7 +281,7 @@ export function StaffDailyReportModal({
               Personal Daily Report & Activity Calendar
             </h3>
             <p className="text-[11px] text-muted truncate mt-0.5">
-              {userName} · {userRole} · SHENGDING CONSTRUCTION SDN BHD (SDSB)
+              {userName} · {userRole}
             </p>
           </div>
         </div>

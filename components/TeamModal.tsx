@@ -471,7 +471,7 @@ export function TeamModal({ open, onClose }: Props) {
           <div>
             <div className="flex items-center gap-2">
               <h3 id="team-modal-title" className="text-sm font-extrabold text-ink">
-                SDSB QA/QC Organisation Chart
+                Site QA/QC Organisation Chart
               </h3>
               <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 px-1.5 py-0.2 text-[9px] font-bold text-emerald-700 dark:text-emerald-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
