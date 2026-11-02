@@ -263,136 +263,142 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
 
       const element = printAreaRef.current;
 
-      const rawCanvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        windowWidth: 1000,
-        windowHeight: 2500,
-        scrollX: 0,
-        scrollY: 0,
-        onclone: (clonedDoc, clonedEl) => {
-          const targetEl = (clonedEl || clonedDoc.getElementById("printable-form-sheet")) as HTMLElement | null;
-          if (targetEl) {
-            // Strip any oklch color references that break html2canvas
-            const style = clonedDoc.createElement("style");
-            style.innerHTML = `
-              #printable-form-sheet, #printable-form-sheet * {
-                color-scheme: light !important;
-                box-sizing: border-box !important;
-              }
-              #printable-form-sheet table td, #printable-form-sheet table th {
-                vertical-align: middle !important;
-                line-height: 1.3 !important;
-              }
-              #printable-form-sheet label {
-                display: inline-block !important;
-                white-space: nowrap !important;
-                vertical-align: middle !important;
-              }
-              #printable-form-sheet label * {
-                vertical-align: middle !important;
-              }
-              .bg-slate-200 { background-color: #e2e8f0 !important; }
-              .bg-slate-100 { background-color: #f1f5f9 !important; }
-              .bg-slate-50  { background-color: #f8fafc !important; }
-              .bg-white     { background-color: #ffffff !important; }
-              .text-slate-950 { color: #020617 !important; }
-              .text-slate-900 { color: #0f172a !important; }
-              .text-slate-800 { color: #1e293b !important; }
-              .text-slate-700 { color: #334155 !important; }
-              .text-slate-600 { color: #475569 !important; }
-              .text-slate-500 { color: #64748b !important; }
-              .text-slate-400 { color: #94a3b8 !important; }
-              .text-blue-950  { color: #172554 !important; }
-              .border-slate-300 { border-color: #cbd5e1 !important; }
-              .border-slate-400 { border-color: #94a3b8 !important; }
-              .border-black   { border-color: #000000 !important; }
-            `;
-            clonedDoc.head.appendChild(style);
+      // Correct html2canvas font baseline overshoot bug in Chromium so text is vertically centered (ditengah) exactly like live preview
+      const origFillText = CanvasRenderingContext2D.prototype.fillText;
+      CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
+        const newY = typeof y === "number" ? y - 4 : y;
+        return origFillText.call(this, text, x, newY, maxWidth);
+      };
 
-            // Convert any computed oklch colors across elements to rgb
-            try {
-              const allEls = targetEl.querySelectorAll("*");
-              const tempCanvas = clonedDoc.createElement("canvas");
-              const tempCtx = tempCanvas.getContext("2d");
-              if (tempCtx) {
-                allEls.forEach((el) => {
-                  const htmlEl = el as HTMLElement;
-                  const cs = clonedDoc.defaultView?.getComputedStyle(htmlEl);
-                  if (cs) {
-                    if (cs.color && cs.color.includes("oklch")) {
-                      tempCtx.fillStyle = cs.color;
-                      htmlEl.style.color = tempCtx.fillStyle;
-                    }
-                    if (cs.backgroundColor && cs.backgroundColor.includes("oklch")) {
-                      tempCtx.fillStyle = cs.backgroundColor;
-                      htmlEl.style.backgroundColor = tempCtx.fillStyle;
-                    }
-                    if (cs.borderColor && cs.borderColor.includes("oklch")) {
-                      tempCtx.fillStyle = cs.borderColor;
-                      htmlEl.style.borderColor = tempCtx.fillStyle;
-                    }
-                  }
-                });
+      let rawCanvas: HTMLCanvasElement;
+      try {
+        rawCanvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: "#ffffff",
+          windowWidth: 1200,
+          windowHeight: 2500,
+          scrollX: 0,
+          scrollY: 0,
+          onclone: (clonedDoc, clonedEl) => {
+            const targetEl = (clonedEl || clonedDoc.getElementById("printable-form-sheet")) as HTMLElement | null;
+            if (targetEl) {
+              // Force display and visibility on all ancestors
+              let curr: HTMLElement | null = targetEl;
+              while (curr && curr !== clonedDoc.body) {
+                curr.style.display = "block";
+                curr.style.visibility = "visible";
+                curr.style.opacity = "1";
+                curr.classList.remove("hidden");
+                curr = curr.parentElement;
               }
-            } catch (e) {
-              console.warn("Color sanitize warning:", e);
+
+              // Strip any oklch color references that break html2canvas
+              const style = clonedDoc.createElement("style");
+              style.innerHTML = `
+                #printable-form-sheet, #printable-form-sheet * {
+                  color-scheme: light !important;
+                  box-sizing: border-box !important;
+                }
+                #printable-form-sheet table td, #printable-form-sheet table th {
+                  vertical-align: middle !important;
+                  line-height: 1.3 !important;
+                }
+                #printable-form-sheet label {
+                  display: inline-block !important;
+                  white-space: nowrap !important;
+                  vertical-align: middle !important;
+                }
+                #printable-form-sheet label * {
+                  vertical-align: middle !important;
+                }
+                .bg-slate-200 { background-color: #e2e8f0 !important; }
+                .bg-slate-100 { background-color: #f1f5f9 !important; }
+                .bg-slate-50  { background-color: #f8fafc !important; }
+                .bg-white     { background-color: #ffffff !important; }
+                .text-slate-950 { color: #020617 !important; }
+                .text-slate-900 { color: #0f172a !important; }
+                .text-slate-800 { color: #1e293b !important; }
+                .text-slate-700 { color: #334155 !important; }
+                .text-slate-600 { color: #475569 !important; }
+                .text-slate-500 { color: #64748b !important; }
+                .text-slate-400 { color: #94a3b8 !important; }
+                .text-blue-950  { color: #172554 !important; }
+                .border-slate-300 { border-color: #cbd5e1 !important; }
+                .border-slate-400 { border-color: #94a3b8 !important; }
+                .border-black   { border-color: #000000 !important; }
+              `;
+              clonedDoc.head.appendChild(style);
+
+              // Convert any computed oklch colors across elements to rgb
+              try {
+                const allEls = targetEl.querySelectorAll("*");
+                const tempCanvas = clonedDoc.createElement("canvas");
+                const tempCtx = tempCanvas.getContext("2d");
+                if (tempCtx) {
+                  allEls.forEach((el) => {
+                    const htmlEl = el as HTMLElement;
+                    const cs = clonedDoc.defaultView?.getComputedStyle(htmlEl);
+                    if (cs) {
+                      if (cs.color && cs.color.includes("oklch")) {
+                        tempCtx.fillStyle = cs.color;
+                        htmlEl.style.color = tempCtx.fillStyle;
+                      }
+                      if (cs.backgroundColor && cs.backgroundColor.includes("oklch")) {
+                        tempCtx.fillStyle = cs.backgroundColor;
+                        htmlEl.style.backgroundColor = tempCtx.fillStyle;
+                      }
+                      if (cs.borderColor && cs.borderColor.includes("oklch")) {
+                        tempCtx.fillStyle = cs.borderColor;
+                        htmlEl.style.borderColor = tempCtx.fillStyle;
+                      }
+                    }
+                  });
+                }
+              } catch (e) {
+                console.warn("Color sanitize warning:", e);
+              }
+
+              // Replace native checkboxes with high-fidelity visual checkmarks that html2canvas renders identically
+              clonedDoc.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+                const isChecked = (input as HTMLInputElement).checked;
+                const box = clonedDoc.createElement("span");
+                box.style.display = "inline-block";
+                box.style.width = "12px";
+                box.style.height = "12px";
+                box.style.minWidth = "12px";
+                box.style.minHeight = "12px";
+                box.style.borderRadius = "2px";
+                box.style.marginRight = "4px";
+                box.style.verticalAlign = "middle";
+                box.style.textAlign = "center";
+                box.style.lineHeight = "12px";
+                box.style.fontSize = "9px";
+                box.style.fontWeight = "bold";
+                box.style.boxSizing = "border-box";
+                if (isChecked) {
+                  box.style.border = "1px solid #2563eb";
+                  box.style.backgroundColor = "#2563eb";
+                  box.style.color = "#ffffff";
+                  box.innerHTML = "&#10003;";
+                } else {
+                  box.style.border = "1.5px solid #94a3b8";
+                  box.style.backgroundColor = "#ffffff";
+                  box.innerHTML = "&nbsp;";
+                }
+                input.parentNode?.replaceChild(box, input);
+              });
+
+              targetEl.style.boxShadow = "none";
+              targetEl.style.border = "none";
             }
-
-            // Replace native checkboxes with high-fidelity visual checkmarks that html2canvas renders identically
-            clonedDoc.querySelectorAll('input[type="checkbox"]').forEach((input) => {
-              const isChecked = (input as HTMLInputElement).checked;
-              const box = clonedDoc.createElement("span");
-              box.style.display = "inline-block";
-              box.style.width = "12px";
-              box.style.height = "12px";
-              box.style.minWidth = "12px";
-              box.style.minHeight = "12px";
-              box.style.borderRadius = "2px";
-              box.style.marginRight = "4px";
-              box.style.verticalAlign = "middle";
-              box.style.textAlign = "center";
-              box.style.lineHeight = "12px";
-              box.style.fontSize = "9px";
-              box.style.fontWeight = "bold";
-              box.style.boxSizing = "border-box";
-              if (isChecked) {
-                box.style.border = "1px solid #2563eb";
-                box.style.backgroundColor = "#2563eb";
-                box.style.color = "#ffffff";
-                box.innerHTML = "&#10003;";
-              } else {
-                box.style.border = "1.5px solid #94a3b8";
-                box.style.backgroundColor = "#ffffff";
-                box.innerHTML = "&nbsp;";
-              }
-              input.parentNode?.replaceChild(box, input);
-            });
-
-            clonedDoc.body.style.margin = "0";
-            clonedDoc.body.style.padding = "0";
-            clonedDoc.body.style.background = "#ffffff";
-            clonedDoc.body.style.overflow = "visible";
-
-            // Enforce standard A4 preview width
-            targetEl.style.position = "static";
-            targetEl.style.margin = "0 auto";
-            targetEl.style.boxSizing = "border-box";
-            targetEl.style.width = "794px";
-            targetEl.style.maxWidth = "794px";
-            targetEl.style.boxShadow = "none";
-            targetEl.style.border = "none";
-            targetEl.style.visibility = "visible";
-            targetEl.style.opacity = "1";
-
-            clonedDoc.body.innerHTML = "";
-            clonedDoc.body.appendChild(targetEl);
-          }
-        },
-      });
+          },
+        });
+      } finally {
+        CanvasRenderingContext2D.prototype.fillText = origFillText;
+      }
 
       const imgData = rawCanvas.toDataURL("image/png");
       const pdf = new jsPDF({

@@ -618,19 +618,26 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
       const html2canvas = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
 
-      const element = printAreaRef.current;
+      // Correct html2canvas font baseline overshoot bug in Chromium so text is vertically centered (ditengah) exactly like live preview
+      const origFillText = CanvasRenderingContext2D.prototype.fillText;
+      CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
+        const newY = typeof y === "number" ? y - 4 : y;
+        return origFillText.call(this, text, x, newY, maxWidth);
+      };
 
-      const rawCanvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        windowWidth: 1200,
-        windowHeight: 2500,
-        scrollX: 0,
-        scrollY: 0,
-        onclone: (clonedDoc, clonedEl) => {
+      let rawCanvas: HTMLCanvasElement;
+      try {
+        rawCanvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          backgroundColor: "#ffffff",
+          windowWidth: 1200,
+          windowHeight: 2500,
+          scrollX: 0,
+          scrollY: 0,
+          onclone: (clonedDoc, clonedEl) => {
           const targetEl = (clonedEl || clonedDoc.getElementById("printable-form-sheet")) as HTMLElement | null;
           if (targetEl) {
             // Force display and visibility on all ancestors
@@ -745,6 +752,9 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
           }
         },
       });
+      } finally {
+        CanvasRenderingContext2D.prototype.fillText = origFillText;
+      }
 
       const imgData = rawCanvas.toDataURL("image/png");
       const pdf = new jsPDF({
