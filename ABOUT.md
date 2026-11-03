@@ -23,7 +23,7 @@ Dashboard ini memaparkan 22 register dalaman sahaja:
 
 ### Submission — 1 register
 
-- MOS - REVISION only
+- MOS Comparison only
 
 ### Test — 9 register
 

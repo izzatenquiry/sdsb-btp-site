@@ -39,6 +39,12 @@ export type RecordRow = {
   recordDate?: string | null;
   notes?: string;
   origin?: string;
+  trade?: string;
+  workItem?: string;
+  accRefA?: string;
+  descriptionA?: string;
+  accRefB?: string;
+  descriptionB?: string;
 };
 
 export type FormValue = {

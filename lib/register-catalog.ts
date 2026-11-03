@@ -1,3 +1,5 @@
+import { STATIC_MOS_COMPARISON_ROWS, type MosComparisonRow } from "./mos-comparison-data";
+
 export type RegisterCategory = "Submission" | "Inspection" | "Test" | "NCR & Observation";
 
 export type RegisterDefinition = {
@@ -8,7 +10,7 @@ export type RegisterDefinition = {
 
 export const registerCatalog: RegisterDefinition[] = [
   // 1. Box 1: Submissions, Quality Governance & Surveillance (7 registers)
-  { name: "MOS - REVISION", category: "Submission", sourceSheets: ["MOS EW", "MOS MBWA M&E", "MOS MBWA"] },
+  { name: "MOS Comparison", category: "Submission", sourceSheets: ["MOS Comparison", "MOS EW", "MOS MBWA M&E", "MOS MBWA"] },
   { name: "ITP", category: "Submission", sourceSheets: ["ITP"] },
   { name: "CHECKLIST", category: "Submission", sourceSheets: ["Checklist"] },
   { name: "OJT", category: "Submission", sourceSheets: ["OJT"] },
@@ -55,9 +57,54 @@ export type SnapshotRecord = {
   recordDate?: string | null;
   notes?: string;
   origin?: string;
+  // MOS Comparison fields
+  trade?: string;
+  workItem?: string;
+  accRefA?: string;
+  descriptionA?: string;
+  accRefB?: string;
+  descriptionB?: string;
 };
 
-const revisedMosAccRefs = new Set(["BTP-A_Sbmtl_005", "BTP-A_Sbmtl_0040"]);
+export function mapMosRowToSnapshotRecord(row: MosComparisonRow, origin = "google-sheets"): SnapshotRecord {
+  const sourceRow = row.no + 5;
+  const isPendingA = !row.accRefA || /pending/i.test(row.accRefA);
+  const isPendingB = !row.accRefB || /pending/i.test(row.accRefB);
+  const status = isPendingA || isPendingB ? "Pending Submission" : "Submitted";
+  const trade = row.trade || "C&S";
+  const discipline = trade.toUpperCase().includes("ARCH") ? "Architectural" : "Civil & Structural";
+  const refParts = [row.accRefA, row.accRefB].filter((v) => v && !/pending/i.test(v));
+
+  return {
+    id: `gs-MOS Comparison-${sourceRow}`,
+    category: "Submission",
+    subcategory: "MOS Comparison",
+    sourceSheet: "MOS Comparison",
+    sourceRow,
+    refNo: row.accRefA || row.accRefB || `MOS-${String(row.no).padStart(3, "0")}`,
+    accRef: refParts.join(" / ") || row.accRefA || row.accRefB || "",
+    title: row.workItem || row.descriptionA || row.descriptionB || `MOS Item #${row.no}`,
+    discipline,
+    location: "",
+    status,
+    state: "open",
+    dueDate: null,
+    recordDate: null,
+    notes: [
+      row.accRefA ? `ACC Ref A: ${row.accRefA} (${row.descriptionA || "-"})` : "",
+      row.accRefB ? `Acc Ref B: ${row.accRefB} (${row.descriptionB || "-"})` : "",
+    ]
+      .filter(Boolean)
+      .join(" | "),
+    origin,
+    trade: row.trade,
+    workItem: row.workItem,
+    accRefA: row.accRefA,
+    descriptionA: row.descriptionA,
+    accRefB: row.accRefB,
+    descriptionB: row.descriptionB,
+  };
+}
 
 function sourceArea(row?: number | null) {
   if (row && row >= 32) return "Block C";
@@ -84,17 +131,18 @@ function withRegister(record: SnapshotRecord, name: string, id = record.id, over
 export function buildRegisterSnapshot(records: SnapshotRecord[]) {
   const result: SnapshotRecord[] = [];
 
+  for (const row of STATIC_MOS_COMPARISON_ROWS) {
+    result.push(mapMosRowToSnapshotRecord(row, "workbook"));
+  }
+
   for (const record of records) {
     const sourceSheet = record.sourceSheet.trim();
-    if (sourceSheet.startsWith("MOS") && revisedMosAccRefs.has(String(record.accRef ?? "").trim())) {
-      result.push(withRegister(record, "MOS - REVISION"));
+    if (sourceSheet.startsWith("MOS")) {
       continue;
     }
 
-    const definition = sourceSheet.startsWith("MOS")
-      ? undefined
-      : registerCatalog.find((register) => register.sourceSheets?.includes(sourceSheet)
-        && sourceSheet !== "RSS Reply");
+    const definition = registerCatalog.find((register) => register.sourceSheets?.includes(sourceSheet)
+      && sourceSheet !== "RSS Reply");
     if (definition) result.push(withRegister(record, definition.name));
   }
 
@@ -126,6 +174,7 @@ export function buildRegisterSnapshot(records: SnapshotRecord[]) {
 }
 
 export function isAllowedRegisterRecord(category: string, subcategory: string) {
-  const register = registerByName.get(subcategory.trim());
+  const normalized = subcategory.trim() === "MOS - REVISION" ? "MOS Comparison" : subcategory.trim();
+  const register = registerByName.get(normalized);
   return Boolean(register && register.category === category);
 }

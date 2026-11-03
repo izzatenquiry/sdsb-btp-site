@@ -52,6 +52,7 @@ import { DsrReportPrintViewerModal } from "@/components/DsrReportPrintViewerModa
 import { DsrRecord, getDsrRecords, getStaffDailyReports } from "@/lib/daily-reports";
 import { GOVERNANCE_FORMS, type GovernanceFormTemplate } from "@/lib/governance-forms";
 import { registerCatalog, registerByName, type RegisterCategory } from "@/lib/register-catalog";
+import { MOS_COMPARISON_META } from "@/lib/mos-comparison-data";
 import { getSavedStaffProfile, normalizeKey } from "@/lib/auth";
 import "./dashboard.css";
 
@@ -98,7 +99,7 @@ const CATEGORY_META: Record<
   },
   Submission: {
     title: "Submissions, Governance & Surveillance",
-    description: "MOS Revisions, ITP, Checklists, OJT, FOK List, RSS & SSR Surveillance",
+    description: "MOS Comparison, ITP, Checklists, OJT, FOK List, RSS & SSR Surveillance",
     classTag: "category-0",
     shortLabel: "Submissions",
   },
@@ -108,6 +109,31 @@ const CATEGORY_META: Record<
     classTag: "category-2",
     shortLabel: "QAQC Tests",
   },
+};
+
+const REGISTER_SUBJECT_TITLES: Record<string, string> = {
+  "MOS Comparison": "MOS Comparison",
+  "ITP": "INSPECTION & TEST PLAN (ITP)",
+  "CHECKLIST": "QAQC INSPECTION CHECKLIST",
+  "OJT": "ON-THE-JOB TRAINING (OJT)",
+  "FOK LIST": "FIRST OF KIND (FOK) INSPECTION LIST",
+  "RSS SUMMARY": "RESIDENT SITE STAFF (RSS) SURVEILLANCE SUMMARY",
+  "SSR SUMMARY": "SITE SURVEILLANCE REPLY (SSR) SUMMARY",
+  "RFWI A C&S": "RFWI - BLOCK A - C&S",
+  "RFWI B C&S": "RFWI - BLOCK B - C&S",
+  "RFWI C C&S": "RFWI - BLOCK C - C&S",
+  "RFWI F C&S": "RFWI - BLOCK F - C&S",
+  "RFWI A ARC": "RFWI - BLOCK A - ARC",
+  "RFWI B ARC": "RFWI - BLOCK B - ARC",
+  "CUBE TEST EW": "CONCRETE CUBE TEST - EARTHWORK (EW)",
+  "CUBE TEST BLOCK A": "CONCRETE CUBE TEST - BLOCK A",
+  "CUBE TEST BLOCK B": "CONCRETE CUBE TEST - BLOCK B",
+  "GROUT TEST BLOCK A": "GROUT TEST - BLOCK A",
+  "GROUT TEST BLOCK B": "GROUT TEST - BLOCK B",
+  "FDT TEST": "FIELD DENSITY TEST (FDT)",
+  "PILE TEST DATE": "PILE TESTING RECORD (ACC)",
+  "PLATE LOAD BEARING TEST": "PLATE LOAD BEARING TEST",
+  "LAB SUMMARY": "QAQC LABORATORY SUMMARY",
 };
 
 function localToday(): string {
@@ -457,7 +483,13 @@ export function Dashboard({
         r.title.toLowerCase().includes(q) ||
         (r.location && r.location.toLowerCase().includes(q)) ||
         (r.discipline && r.discipline.toLowerCase().includes(q)) ||
-        r.subcategory.toLowerCase().includes(q)
+        r.subcategory.toLowerCase().includes(q) ||
+        (r.trade && r.trade.toLowerCase().includes(q)) ||
+        (r.workItem && r.workItem.toLowerCase().includes(q)) ||
+        (r.accRefA && r.accRefA.toLowerCase().includes(q)) ||
+        (r.descriptionA && r.descriptionA.toLowerCase().includes(q)) ||
+        (r.accRefB && r.accRefB.toLowerCase().includes(q)) ||
+        (r.descriptionB && r.descriptionB.toLowerCase().includes(q))
       );
     });
   }, [rows, categoryFilter, selectedSubcategory, statusFilter, searchQuery, today]);
@@ -491,40 +523,62 @@ export function Dashboard({
   }
 
   function exportCSV() {
-    const cols = [
-      "No",
-      "Category",
-      "Register",
-      "Internal Reference",
-      "ACC Reference",
-      "Title / Description",
-      "Discipline",
-      "Location",
-      "Status",
-      "Record Date",
-      "Target Due Date",
-      "Notes",
-    ];
-
     const escapeVal = (v: unknown) => `"${String(v ?? "").replaceAll('"', '""')}"`;
+    const isMosComparisonView = selectedSubcategory === "MOS Comparison";
+
+    const cols = isMosComparisonView
+      ? [
+          "NO",
+          "Trade",
+          "Description / Work Item",
+          "ACC Ref A",
+          "Description A",
+          "Acc Ref B",
+          "Description B",
+        ]
+      : [
+          "No",
+          "Category",
+          "Register",
+          "Internal Reference",
+          "ACC Reference",
+          "Title / Description",
+          "Discipline",
+          "Location",
+          "Status",
+          "Record Date",
+          "Target Due Date",
+          "Notes",
+        ];
 
     const lines = [
       cols.map(escapeVal).join(","),
       ...filteredRegisters.map((r, i) =>
-        [
-          i + 1,
-          r.category,
-          r.subcategory,
-          r.refNo,
-          r.accRef || "",
-          r.title,
-          r.discipline || "",
-          r.location || "",
-          r.status,
-          r.recordDate || "",
-          r.dueDate || "",
-          r.notes || "",
-        ]
+        (isMosComparisonView
+          ? [
+              i + 1,
+              r.trade || "C&S",
+              r.workItem || r.title || "",
+              r.accRefA || "",
+              r.descriptionA || "",
+              r.accRefB || "",
+              r.descriptionB || "",
+            ]
+          : [
+              i + 1,
+              r.category,
+              r.subcategory,
+              r.refNo,
+              r.accRef || "",
+              r.title,
+              r.discipline || "",
+              r.location || "",
+              r.status,
+              r.recordDate || "",
+              r.dueDate || "",
+              r.notes || "",
+            ]
+        )
           .map(escapeVal)
           .join(","),
       ),
@@ -1117,6 +1171,58 @@ export function Dashboard({
 
           {/* Data Table / Spreadsheet View */}
           <div className="overflow-hidden rounded-xl border border-line bg-paper-elevated shadow-sm">
+            {/* Official BTP Google Sheets Header Banner for all 22 Registers */}
+            <div className="border-b border-slate-300 dark:border-slate-700">
+              <div className="bg-[#0f3b68] px-4 py-2 text-white font-bold text-sm sm:text-base tracking-wide uppercase flex items-center justify-between gap-2">
+                <span>PROJECT NAME: {MOS_COMPARISON_META.projectName}</span>
+                <span className="hidden sm:inline-block text-[11px] font-semibold bg-white/15 px-2.5 py-0.5 rounded border border-white/20">
+                  {selectedSubcategory === "ALL" ? `All ${categoryFilter} Registers` : selectedSubcategory}
+                </span>
+              </div>
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 bg-slate-50/70 dark:bg-slate-900/90 px-4 py-2.5 text-xs">
+                <div className="flex flex-col justify-center space-y-1 font-bold text-slate-900 dark:text-slate-100">
+                  <div>PACKAGE: {MOS_COMPARISON_META.packageName}</div>
+                  <div>
+                    SUBJECT:{" "}
+                    {selectedSubcategory === "ALL"
+                      ? CATEGORY_META[categoryFilter]?.title.toUpperCase() || categoryFilter.toUpperCase()
+                      : REGISTER_SUBJECT_TITLES[selectedSubcategory] || selectedSubcategory}
+                  </div>
+                </div>
+
+                {/* Floating Standalone Boxes for Status Summary & Revision Date */}
+                <div className="flex flex-wrap items-stretch gap-3">
+                  {/* Floating Box 1: Status Summary */}
+                  <div className="rounded-xl border border-slate-300/90 dark:border-slate-700 bg-white dark:bg-slate-800/90 shadow-sm px-3.5 py-1.5 flex flex-col justify-center min-w-[240px]">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-center mb-1">
+                      Status Summary
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-[11px] font-bold">
+                      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 text-emerald-700 dark:text-emerald-300">
+                        Closed: {filteredRegisters.filter((r) => r.state === "closed").length}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 text-amber-700 dark:text-amber-300">
+                        Pending: {filteredRegisters.filter((r) => r.state === "open").length}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 dark:bg-slate-700/70 border border-slate-200 dark:border-slate-600 px-2 py-0.5 text-slate-800 dark:text-slate-100">
+                        Total: {filteredRegisters.length}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Floating Box 2: Revision Date */}
+                  <div className="rounded-xl border border-amber-300/90 dark:border-amber-700/70 bg-white dark:bg-slate-800/90 shadow-sm px-4 py-1.5 flex flex-col justify-center items-center min-w-[175px]">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 text-center mb-1">
+                      Revision Date
+                    </div>
+                    <div className="rounded-md bg-[#fff2cc] dark:bg-amber-950/70 border border-amber-300/80 dark:border-amber-700/60 px-2.5 py-0.5 text-[11px] font-extrabold text-slate-900 dark:text-amber-200 tracking-tight">
+                      {MOS_COMPARISON_META.revisionDate}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="flex md:hidden items-center justify-between px-3 py-1.5 bg-paper/60 border-b border-line text-[11px] text-muted">
               <span>{filteredRegisters.length} records</span>
               <span className="font-semibold text-accent flex items-center gap-1">
@@ -1124,156 +1230,317 @@ export function Dashboard({
               </span>
             </div>
             <div className="max-h-[calc(100vh-230px)] max-sm:max-h-[calc(100dvh-280px)] overflow-x-auto overflow-y-auto overscroll-x-contain">
-              <table className="w-full min-w-[1420px] text-left text-xs border-collapse table-fixed">
-                <colgroup>
-                  <col style={{ width: "48px" }} />
-                  <col style={{ width: "140px" }} />
-                  <col style={{ width: "300px" }} />
-                  <col style={{ width: "130px" }} />
-                  <col style={{ width: "auto" }} />
-                  <col style={{ width: "150px" }} />
-                  <col style={{ width: "195px" }} />
-                  <col style={{ width: "120px" }} />
-                  <col style={{ width: "175px" }} />
-                </colgroup>
-                <thead className="sticky top-0 z-10 border-b border-line bg-paper/80 backdrop-blur text-muted">
-                  <tr>
-                    <th className="p-2.5 font-bold uppercase text-center whitespace-nowrap">No</th>
-                    <th className="p-2.5 font-bold uppercase whitespace-nowrap">Register</th>
-                    <th className="p-2.5 font-bold uppercase whitespace-nowrap">Internal Reference</th>
-                    <th className="p-2.5 font-bold uppercase whitespace-nowrap">ACC Reference</th>
-                    <th className="p-2.5 font-bold uppercase whitespace-nowrap">Title / Subject</th>
-                    <th className="p-2.5 font-bold uppercase whitespace-nowrap">Location</th>
-                    <th className="p-2.5 font-bold uppercase whitespace-nowrap">Status</th>
-                    <th className="p-2.5 font-bold uppercase whitespace-nowrap">Target Date</th>
-                    <th className="p-2.5 font-bold uppercase text-center whitespace-nowrap">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line/60">
-                  {filteredRegisters.length === 0 ? (
+              {selectedSubcategory === "MOS Comparison" ? (
+                <table className="w-full min-w-[1280px] text-left text-xs border-collapse table-fixed">
+                  <colgroup>
+                    <col style={{ width: "54px" }} />
+                    <col style={{ width: "76px" }} />
+                    <col style={{ width: "260px" }} />
+                    <col style={{ width: "145px" }} />
+                    <col style={{ width: "260px" }} />
+                    <col style={{ width: "145px" }} />
+                    <col style={{ width: "260px" }} />
+                    <col style={{ width: "155px" }} />
+                  </colgroup>
+                  <thead className="sticky top-0 z-10 border-b-2 border-slate-400 dark:border-slate-600 text-slate-900 dark:text-slate-100">
                     <tr>
-                      <td colSpan={9} className="p-8 text-center text-muted">
-                        No records match the selected filter. Try changing category, status, or search term.
-                      </td>
+                      <th className="p-2.5 font-bold text-center whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        NO
+                      </th>
+                      <th className="p-2.5 font-bold text-center whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        Trade
+                      </th>
+                      <th className="p-2.5 font-bold whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        Description / Work Item
+                      </th>
+                      <th className="p-2.5 font-bold text-center whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        ACC Ref A
+                      </th>
+                      <th className="p-2.5 font-bold whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        Description A
+                      </th>
+                      <th className="p-2.5 font-bold text-center whitespace-nowrap bg-[#c6e0b4] dark:bg-emerald-950/90 border-r border-slate-300 dark:border-slate-700">
+                        Acc Ref B
+                      </th>
+                      <th className="p-2.5 font-bold whitespace-nowrap bg-[#c6e0b4] dark:bg-emerald-950/90 border-r border-slate-300 dark:border-slate-700">
+                        Description B
+                      </th>
+                      <th className="p-2.5 font-bold uppercase text-center whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90">
+                        Action
+                      </th>
                     </tr>
-                  ) : (
-                    filteredRegisters.slice(0, 500).map((r, i) => {
-                      const late = isOverdue(r, today);
-                      return (
-                        <tr
-                          key={r.id}
-                          onClick={() => openEditRecord(r)}
-                          className="hover:bg-teal-50/50 dark:hover:bg-accent/10 transition cursor-pointer"
-                        >
-                          <td className="p-2.5 text-center text-muted font-mono whitespace-nowrap">{i + 1}</td>
-                          <td className="p-2.5 font-semibold text-accent whitespace-nowrap">
-                            <span className="truncate block" title={r.subcategory}>
-                              {r.subcategory}
-                            </span>
-                          </td>
-                          <td className="p-2.5 font-bold font-mono text-ink whitespace-nowrap tracking-tight">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span>{r.refNo}</span>
-                              {hasScancopySync(r.refNo) ? (
-                                <button
-                                  type="button"
-                                  title="View closed signed scancopy PDF"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setScancopyRecord(r);
-                                  }}
-                                  className="inline-flex items-center gap-1 rounded bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 px-1.5 py-0.5 text-[10px] font-bold hover:bg-rose-500 hover:text-white transition shadow-2xs cursor-pointer"
-                                >
-                                  <FileCheck2 className="h-3 w-3" />
-                                  <span>Scancopy</span>
-                                </button>
-                              ) : r.state === "closed" || (r.status || "").toLowerCase().includes("closed") ? (
-                                <button
-                                  type="button"
-                                  title="Upload closed signed scancopy PDF"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setScancopyRecord(r);
-                                  }}
-                                  className="inline-flex items-center gap-1 rounded border border-dashed border-rose-400/50 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 text-[10px] font-medium hover:bg-rose-500/10 transition cursor-pointer"
-                                >
-                                  <Plus className="h-2.5 w-2.5" />
-                                  <span>Scancopy</span>
-                                </button>
-                              ) : null}
-                            </div>
-                          </td>
-                          <td className="p-2.5 text-muted font-mono text-[11px] whitespace-nowrap">
-                            {r.accRef || "—"}
-                          </td>
-                          <td className="p-2.5 font-medium text-ink min-w-[340px]">
-                            <span className="line-clamp-2" title={r.title}>
-                              {r.title}
-                            </span>
-                          </td>
-                          <td className="p-2.5 text-muted max-w-[160px] truncate" title={r.location || ""}>
-                            <span className="truncate block" title={r.location}>
-                              {r.location || "—"}
-                            </span>
-                          </td>
-                          <td className="p-2.5 whitespace-nowrap">
-                            <span
-                              className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${statusPillClass(
-                                r.status,
-                                r.state,
-                              )}`}
-                            >
-                              {r.status}
-                            </span>
-                          </td>
-                          <td className="p-2.5 whitespace-nowrap">
-                            <span className={late ? "font-bold text-red-600 dark:text-red-400" : "text-ink"}>
-                              {formatDate(r.dueDate)}
-                            </span>
-                            {late && (
-                              <span className="block text-[10px] font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
-                                Overdue ({daysOverdue(r.dueDate, today)}d)
+                  </thead>
+                  <tbody className="divide-y divide-slate-300/80 dark:divide-slate-700/70">
+                    {filteredRegisters.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="p-8 text-center text-muted">
+                          No records match the selected filter. Try changing status or search term.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredRegisters.slice(0, 500).map((r, i) => {
+                        const accRefA = r.accRefA ?? "";
+                        const descA = r.descriptionA ?? "";
+                        const accRefB = r.accRefB ?? "";
+                        const descB = r.descriptionB ?? "";
+                        const isPendingA = /pending/i.test(accRefA);
+                        const isPendingB = /pending/i.test(accRefB);
+                        return (
+                          <tr
+                            key={r.id}
+                            onClick={() => openEditRecord(r)}
+                            className="hover:brightness-95 transition cursor-pointer"
+                          >
+                            <td className="p-2 text-center font-medium text-ink bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
+                              {i + 1}
+                            </td>
+                            <td className="p-2 text-center font-semibold text-ink bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
+                              {r.trade || "C&S"}
+                            </td>
+                            <td className="p-2 font-medium text-ink bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
+                              <span className="line-clamp-2" title={r.workItem || r.title}>
+                                {r.workItem || r.title}
                               </span>
-                            )}
-                          </td>
-                          <td className="p-2.5 text-center whitespace-nowrap">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                type="button"
-                                title="Edit record details and live preview official form"
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-2 py-1 text-xs font-semibold text-accent hover:border-accent hover:bg-accent hover:text-white transition shadow-2xs cursor-pointer whitespace-nowrap"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openEditRecord(r);
-                                }}
+                            </td>
+                            <td
+                              className={`p-2 text-center border-r border-slate-300/70 dark:border-slate-700/70 bg-[#d9e1f2] dark:bg-sky-950/35 whitespace-nowrap ${
+                                isPendingA
+                                  ? "italic text-slate-700 dark:text-amber-300 font-medium"
+                                  : "font-semibold text-slate-900 dark:text-sky-100"
+                              }`}
+                            >
+                              {accRefA || ""}
+                            </td>
+                            <td className="p-2 border-r border-slate-300/70 dark:border-slate-700/70 bg-[#d9e1f2] dark:bg-sky-950/35 text-slate-900 dark:text-sky-100">
+                              <span className="line-clamp-2" title={descA}>
+                                {descA}
+                              </span>
+                            </td>
+                            <td
+                              className={`p-2 text-center border-r border-slate-300/70 dark:border-slate-700/70 bg-[#e2efda] dark:bg-emerald-950/35 whitespace-nowrap ${
+                                isPendingB
+                                  ? "italic text-slate-700 dark:text-amber-300 font-medium"
+                                  : "font-semibold text-slate-900 dark:text-emerald-100"
+                              }`}
+                            >
+                              {accRefB || ""}
+                            </td>
+                            <td className="p-2 border-r border-slate-300/70 dark:border-slate-700/70 bg-[#e2efda] dark:bg-emerald-950/35 text-slate-900 dark:text-emerald-100">
+                              <span className="line-clamp-2" title={descB}>
+                                {descB}
+                              </span>
+                            </td>
+                            <td className="p-2 text-center bg-white dark:bg-slate-900 whitespace-nowrap">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button
+                                  type="button"
+                                  title="Edit record details and live preview official form"
+                                  className="inline-flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-2 py-1 text-xs font-semibold text-accent hover:border-accent hover:bg-accent hover:text-white transition shadow-2xs cursor-pointer whitespace-nowrap"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openEditRecord(r);
+                                  }}
+                                >
+                                  <FileEdit className="h-3.5 w-3.5" />
+                                  <span>Edit</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  title={hasScancopySync(r.refNo) ? "Preview signed scancopy PDF" : "Attach signed scancopy PDF"}
+                                  className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
+                                    hasScancopySync(r.refNo)
+                                      ? "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-600 hover:text-white shadow-2xs"
+                                      : "border-line bg-paper/60 text-muted hover:border-accent hover:text-accent"
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setScancopyRecord(r);
+                                  }}
+                                >
+                                  <FileText className="h-3.5 w-3.5 text-rose-500" />
+                                  <span>{hasScancopySync(r.refNo) ? "Scancopy" : "+ PDF"}</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              ) : (
+                <table className="w-full min-w-[1420px] text-left text-xs border-collapse table-fixed">
+                  <colgroup>
+                    <col style={{ width: "52px" }} />
+                    <col style={{ width: "145px" }} />
+                    <col style={{ width: "290px" }} />
+                    <col style={{ width: "140px" }} />
+                    <col style={{ width: "auto" }} />
+                    <col style={{ width: "160px" }} />
+                    <col style={{ width: "185px" }} />
+                    <col style={{ width: "120px" }} />
+                    <col style={{ width: "170px" }} />
+                  </colgroup>
+                  <thead className="sticky top-0 z-10 border-b-2 border-slate-400 dark:border-slate-600 text-slate-900 dark:text-slate-100">
+                    <tr>
+                      <th className="p-2.5 font-bold text-center whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        NO
+                      </th>
+                      <th className="p-2.5 font-bold whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        Register
+                      </th>
+                      <th className="p-2.5 font-bold whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        Reference Number
+                      </th>
+                      <th className="p-2.5 font-bold text-center whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        ACC Reference
+                      </th>
+                      <th className="p-2.5 font-bold whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        Title / Work Description
+                      </th>
+                      <th className="p-2.5 font-bold whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        Location / Block
+                      </th>
+                      <th className="p-2.5 font-bold text-center whitespace-nowrap bg-[#c6e0b4] dark:bg-emerald-950/90 border-r border-slate-300 dark:border-slate-700">
+                        Status ACC
+                      </th>
+                      <th className="p-2.5 font-bold text-center whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90 border-r border-slate-300 dark:border-slate-700">
+                        Inspection / Date
+                      </th>
+                      <th className="p-2.5 font-bold uppercase text-center whitespace-nowrap bg-[#b4c6e7] dark:bg-sky-950/90">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-300/80 dark:divide-slate-700/70">
+                    {filteredRegisters.length === 0 ? (
+                      <tr>
+                        <td colSpan={9} className="p-8 text-center text-muted">
+                          No records match the selected filter. Try changing category, status, or search term.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredRegisters.slice(0, 500).map((r, i) => {
+                        const late = isOverdue(r, today);
+                        const displayDate = r.dueDate || r.recordDate;
+                        return (
+                          <tr
+                            key={r.id}
+                            onClick={() => openEditRecord(r)}
+                            className="hover:brightness-95 transition cursor-pointer"
+                          >
+                            <td className="p-2 text-center font-medium text-ink bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
+                              {i + 1}
+                            </td>
+                            <td className="p-2 font-semibold text-accent bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
+                              <span className="truncate block" title={r.subcategory}>
+                                {r.subcategory}
+                              </span>
+                            </td>
+                            <td className="p-2 font-bold font-mono text-slate-900 dark:text-sky-100 bg-[#d9e1f2]/65 dark:bg-sky-950/30 border-r border-slate-300/70 dark:border-slate-700/70 whitespace-nowrap tracking-tight">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span>{r.refNo}</span>
+                                {hasScancopySync(r.refNo) ? (
+                                  <button
+                                    type="button"
+                                    title="View closed signed scancopy PDF"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setScancopyRecord(r);
+                                    }}
+                                    className="inline-flex items-center gap-1 rounded bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 px-1.5 py-0.5 text-[10px] font-bold hover:bg-rose-500 hover:text-white transition shadow-2xs cursor-pointer"
+                                  >
+                                    <FileCheck2 className="h-3 w-3" />
+                                    <span>Scancopy</span>
+                                  </button>
+                                ) : r.state === "closed" || (r.status || "").toLowerCase().includes("closed") ? (
+                                  <button
+                                    type="button"
+                                    title="Upload closed signed scancopy PDF"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setScancopyRecord(r);
+                                    }}
+                                    className="inline-flex items-center gap-1 rounded border border-dashed border-rose-400/50 text-rose-600 dark:text-rose-400 px-1.5 py-0.5 text-[10px] font-medium hover:bg-rose-500/10 transition cursor-pointer"
+                                  >
+                                    <Plus className="h-2.5 w-2.5" />
+                                    <span>Scancopy</span>
+                                  </button>
+                                ) : null}
+                              </div>
+                            </td>
+                            <td className="p-2 text-center font-mono text-[11px] font-semibold text-slate-800 dark:text-sky-200 bg-[#d9e1f2]/65 dark:bg-sky-950/30 border-r border-slate-300/70 dark:border-slate-700/70 whitespace-nowrap">
+                              {r.accRef || "—"}
+                            </td>
+                            <td className="p-2 font-medium text-ink bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 min-w-[320px]">
+                              <span className="line-clamp-2" title={r.title}>
+                                {r.title}
+                              </span>
+                            </td>
+                            <td className="p-2 text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 max-w-[160px] truncate" title={r.location || ""}>
+                              <span className="truncate block" title={r.location}>
+                                {r.location || "—"}
+                              </span>
+                            </td>
+                            <td className="p-2 text-center bg-[#e2efda]/70 dark:bg-emerald-950/25 border-r border-slate-300/70 dark:border-slate-700/70 whitespace-nowrap">
+                              <span
+                                className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${statusPillClass(
+                                  r.status,
+                                  r.state,
+                                )}`}
                               >
-                                <FileEdit className="h-3.5 w-3.5" />
-                                <span>Edit</span>
-                              </button>
-                              <button
-                                type="button"
-                                title={hasScancopySync(r.refNo) ? "Preview signed scancopy PDF" : "Attach signed scancopy PDF"}
-                                className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
-                                  hasScancopySync(r.refNo)
-                                    ? "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-600 hover:text-white shadow-2xs"
-                                    : "border-line bg-paper/60 text-muted hover:border-accent hover:text-accent"
-                                }`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setScancopyRecord(r);
-                                }}
-                              >
-                                <FileText className="h-3.5 w-3.5 text-rose-500" />
-                                <span>{hasScancopySync(r.refNo) ? "Scancopy" : "+ PDF"}</span>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+                                {r.status}
+                              </span>
+                            </td>
+                            <td className="p-2 text-center bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 whitespace-nowrap">
+                              <span className={late ? "font-bold text-red-600 dark:text-red-400" : "font-medium text-ink"}>
+                                {formatDate(displayDate)}
+                              </span>
+                              {late && (
+                                <span className="block text-[10px] font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
+                                  Overdue ({daysOverdue(r.dueDate, today)}d)
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-2 text-center bg-white dark:bg-slate-900 whitespace-nowrap">
+                              <div className="flex items-center justify-center gap-1.5">
+                                <button
+                                  type="button"
+                                  title="Edit record details and live preview official form"
+                                  className="inline-flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-2 py-1 text-xs font-semibold text-accent hover:border-accent hover:bg-accent hover:text-white transition shadow-2xs cursor-pointer whitespace-nowrap"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openEditRecord(r);
+                                  }}
+                                >
+                                  <FileEdit className="h-3.5 w-3.5" />
+                                  <span>Edit</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  title={hasScancopySync(r.refNo) ? "Preview signed scancopy PDF" : "Attach signed scancopy PDF"}
+                                  className={`inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
+                                    hasScancopySync(r.refNo)
+                                      ? "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-600 hover:text-white shadow-2xs"
+                                      : "border-line bg-paper/60 text-muted hover:border-accent hover:text-accent"
+                                  }`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setScancopyRecord(r);
+                                  }}
+                                >
+                                  <FileText className="h-3.5 w-3.5 text-rose-500" />
+                                  <span>{hasScancopySync(r.refNo) ? "Scancopy" : "+ PDF"}</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
 
             {/* Footer summary */}

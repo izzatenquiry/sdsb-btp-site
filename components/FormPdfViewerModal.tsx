@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import type { GovernanceFormTemplate } from "@/lib/governance-forms";
 import type { RecordRow } from "./RecordModal";
+import { exportElementToA4Pdf } from "@/lib/export-form-pdf";
 
 // Import all 14 official form sheets
 import { RfwiSheet } from "./forms/RfwiSheet";
@@ -175,265 +176,15 @@ export function FormPdfViewerModal({
     window.print();
   }
 
-// Helper to auto-crop whitespace from captured canvas
-function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
-  const ctx = sourceCanvas.getContext("2d");
-  if (!ctx) return sourceCanvas;
-  const w = sourceCanvas.width;
-  const h = sourceCanvas.height;
-  let imgData: ImageData;
-  try {
-    imgData = ctx.getImageData(0, 0, w, h);
-  } catch {
-    return sourceCanvas;
-  }
-  const data = imgData.data;
-
-  const isContent = (x: number, y: number) => {
-    const idx = (y * w + x) * 4;
-    const r = data[idx];
-    const g = data[idx + 1];
-    const b = data[idx + 2];
-    const a = data[idx + 3];
-    return a > 30 && (r < 240 || g < 240 || b < 240);
-  };
-
-  let top = 0;
-  let bottom = h - 1;
-  let left = 0;
-  let right = w - 1;
-
-  topLoop: for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      if (isContent(x, y)) {
-        top = Math.max(0, y - 1);
-        break topLoop;
-      }
-    }
-  }
-
-  bottomLoop: for (let y = h - 1; y >= 0; y--) {
-    for (let x = 0; x < w; x++) {
-      if (isContent(x, y)) {
-        bottom = Math.min(h - 1, y + 1);
-        break bottomLoop;
-      }
-    }
-  }
-
-  leftLoop: for (let x = 0; x < w; x++) {
-    for (let y = top; y <= bottom; y++) {
-      if (isContent(x, y)) {
-        left = Math.max(0, x - 1);
-        break leftLoop;
-      }
-    }
-  }
-
-  rightLoop: for (let x = w - 1; x >= 0; x--) {
-    for (let y = top; y <= bottom; y++) {
-      if (isContent(x, y)) {
-        right = Math.min(w - 1, x + 1);
-        break rightLoop;
-      }
-    }
-  }
-
-  const cropW = right - left + 1;
-  const cropH = bottom - top + 1;
-  if (cropW <= 20 || cropH <= 20) return sourceCanvas;
-
-  const cropped = document.createElement("canvas");
-  cropped.width = cropW;
-  cropped.height = cropH;
-  const cCtx = cropped.getContext("2d");
-  if (!cCtx) return sourceCanvas;
-  cCtx.fillStyle = "#ffffff";
-  cCtx.fillRect(0, 0, cropW, cropH);
-  cCtx.drawImage(sourceCanvas, left, top, cropW, cropH, 0, 0, cropW, cropH);
-  return cropped;
-}
-
   async function handleDownloadPdf() {
     if (!printAreaRef.current || !template) return;
     setDownloading(true);
     try {
-      const html2canvas = (await import("html2canvas")).default;
-      const { jsPDF } = await import("jspdf");
-
-      const element = printAreaRef.current;
-
-      // Correct html2canvas font baseline overshoot bug in Chromium so text is vertically centered (ditengah) exactly like live preview
-      const origFillText = CanvasRenderingContext2D.prototype.fillText;
-      CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
-        const newY = typeof y === "number" ? y - 4 : y;
-        return origFillText.call(this, text, x, newY, maxWidth);
-      };
-
-      let rawCanvas: HTMLCanvasElement;
-      try {
-        rawCanvas = await html2canvas(element, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: true,
-          logging: false,
-          backgroundColor: "#ffffff",
-          windowWidth: 1200,
-          windowHeight: 2500,
-          scrollX: 0,
-          scrollY: 0,
-          onclone: (clonedDoc, clonedEl) => {
-            const targetEl = (clonedEl || clonedDoc.getElementById("printable-form-sheet")) as HTMLElement | null;
-            if (targetEl) {
-              // Force display and visibility on all ancestors
-              let curr: HTMLElement | null = targetEl;
-              while (curr && curr !== clonedDoc.body) {
-                curr.style.display = "block";
-                curr.style.visibility = "visible";
-                curr.style.opacity = "1";
-                curr.classList.remove("hidden");
-                curr = curr.parentElement;
-              }
-
-              // Strip any oklch color references that break html2canvas
-              const style = clonedDoc.createElement("style");
-              style.innerHTML = `
-                #printable-form-sheet, #printable-form-sheet * {
-                  color-scheme: light !important;
-                  box-sizing: border-box !important;
-                }
-                #printable-form-sheet table td, #printable-form-sheet table th {
-                  vertical-align: middle !important;
-                  line-height: 1.3 !important;
-                }
-                #printable-form-sheet label {
-                  display: inline-block !important;
-                  white-space: nowrap !important;
-                  vertical-align: middle !important;
-                }
-                #printable-form-sheet label * {
-                  vertical-align: middle !important;
-                }
-                .bg-slate-200 { background-color: #e2e8f0 !important; }
-                .bg-slate-100 { background-color: #f1f5f9 !important; }
-                .bg-slate-50  { background-color: #f8fafc !important; }
-                .bg-white     { background-color: #ffffff !important; }
-                .text-slate-950 { color: #020617 !important; }
-                .text-slate-900 { color: #0f172a !important; }
-                .text-slate-800 { color: #1e293b !important; }
-                .text-slate-700 { color: #334155 !important; }
-                .text-slate-600 { color: #475569 !important; }
-                .text-slate-500 { color: #64748b !important; }
-                .text-slate-400 { color: #94a3b8 !important; }
-                .text-blue-950  { color: #172554 !important; }
-                .border-slate-300 { border-color: #cbd5e1 !important; }
-                .border-slate-400 { border-color: #94a3b8 !important; }
-                .border-black   { border-color: #000000 !important; }
-              `;
-              clonedDoc.head.appendChild(style);
-
-              // Convert any computed oklch colors across elements to rgb
-              try {
-                const allEls = targetEl.querySelectorAll("*");
-                const tempCanvas = clonedDoc.createElement("canvas");
-                const tempCtx = tempCanvas.getContext("2d");
-                if (tempCtx) {
-                  allEls.forEach((el) => {
-                    const htmlEl = el as HTMLElement;
-                    const cs = clonedDoc.defaultView?.getComputedStyle(htmlEl);
-                    if (cs) {
-                      if (cs.color && cs.color.includes("oklch")) {
-                        tempCtx.fillStyle = cs.color;
-                        htmlEl.style.color = tempCtx.fillStyle;
-                      }
-                      if (cs.backgroundColor && cs.backgroundColor.includes("oklch")) {
-                        tempCtx.fillStyle = cs.backgroundColor;
-                        htmlEl.style.backgroundColor = tempCtx.fillStyle;
-                      }
-                      if (cs.borderColor && cs.borderColor.includes("oklch")) {
-                        tempCtx.fillStyle = cs.borderColor;
-                        htmlEl.style.borderColor = tempCtx.fillStyle;
-                      }
-                    }
-                  });
-                }
-              } catch (e) {
-                console.warn("Color sanitize warning:", e);
-              }
-
-              // Replace native checkboxes with high-fidelity visual checkmarks that html2canvas renders identically
-              clonedDoc.querySelectorAll('input[type="checkbox"]').forEach((input) => {
-                const isChecked = (input as HTMLInputElement).checked;
-                const box = clonedDoc.createElement("span");
-                box.style.display = "inline-block";
-                box.style.width = "12px";
-                box.style.height = "12px";
-                box.style.minWidth = "12px";
-                box.style.minHeight = "12px";
-                box.style.borderRadius = "2px";
-                box.style.marginRight = "4px";
-                box.style.verticalAlign = "middle";
-                box.style.textAlign = "center";
-                box.style.lineHeight = "12px";
-                box.style.fontSize = "9px";
-                box.style.fontWeight = "bold";
-                box.style.boxSizing = "border-box";
-                if (isChecked) {
-                  box.style.border = "1px solid #2563eb";
-                  box.style.backgroundColor = "#2563eb";
-                  box.style.color = "#ffffff";
-                  box.innerHTML = "&#10003;";
-                } else {
-                  box.style.border = "1.5px solid #94a3b8";
-                  box.style.backgroundColor = "#ffffff";
-                  box.innerHTML = "&nbsp;";
-                }
-                input.parentNode?.replaceChild(box, input);
-              });
-
-              targetEl.style.boxShadow = "none";
-              targetEl.style.border = "none";
-            }
-          },
-        });
-      } finally {
-        CanvasRenderingContext2D.prototype.fillText = origFillText;
-      }
-
-      const imgData = rawCanvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-        compress: true,
-      });
-
-      // Fit preview proportionally onto 1 page A4 full page
-      const pageWidth = 210;
-      const pageHeight = 297;
-      const aspect = rawCanvas.height / rawCanvas.width;
-      
-      let pdfW = pageWidth;
-      let pdfH = pdfW * aspect;
-      let posX = 0;
-      let posY = 0;
-
-      if (pdfH > pageHeight) {
-        pdfH = pageHeight;
-        pdfW = pdfH / aspect;
-        posX = (pageWidth - pdfW) / 2;
-        posY = 0;
-      } else {
-        posY = (pageHeight - pdfH) / 2;
-      }
-
-      pdf.addImage(imgData, "PNG", posX, posY, pdfW, pdfH, undefined, "FAST");
-
       const filename = `${template.code}_${formData.refNo || "Form"}.pdf`
         .replace(/[/\\?%*:|"<>]/g, "-")
         .replace(/\s+/g, "_")
         .trim();
-      pdf.save(filename);
+      await exportElementToA4Pdf(printAreaRef.current, filename);
     } catch (err) {
       console.error("PDF generation failed:", err);
       handlePrint();
@@ -558,7 +309,7 @@ function autoCropCanvas(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
           <div
             ref={printAreaRef}
             id="printable-form-sheet"
-            className="w-full max-w-[210mm] min-h-[297mm] bg-white text-black p-8 shadow-md border border-slate-300 font-sans text-xs selection:bg-teal-200"
+            className="w-full max-w-[820px] bg-white text-slate-900 p-5 sm:p-6 shadow-md border border-slate-300 font-sans text-xs leading-normal selection:bg-teal-200"
             style={{
               boxSizing: "border-box",
               color: "#111827",

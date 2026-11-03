@@ -1,4 +1,10 @@
-import { registerCatalog, type RegisterCategory, type SnapshotRecord } from "./register-catalog";
+import {
+  mapMosRowToSnapshotRecord,
+  registerCatalog,
+  type RegisterCategory,
+  type SnapshotRecord,
+} from "./register-catalog";
+import { fetchLiveMosComparisonRows, STATIC_MOS_COMPARISON_ROWS } from "./mos-comparison-data";
 
 export const GOOGLE_SHEETS_WEBAPP_URL =
   "https://script.google.com/macros/s/AKfycbwETyhGkGhqkRZyePYL3TLVyPniZEXKqT-aOBK0-lY7WDXVGR0GXlQwF5BOtz3YNwl3jg/exec";
@@ -62,7 +68,7 @@ function normalizeSubcategory(sheetName: string): { canonicalName: string; categ
   }
 
   // Handle special aliases
-  if (lower.includes("mos")) return { canonicalName: "MOS - REVISION", category: "Submission" };
+  if (lower.includes("mos")) return { canonicalName: "MOS Comparison", category: "Submission" };
   if (lower.includes("plate")) return { canonicalName: "PLATE LOAD BEARING TEST", category: "Test" };
   if (lower.includes("checklist")) return { canonicalName: "CHECKLIST", category: "Submission" };
   if (lower.includes("itp")) return { canonicalName: "ITP", category: "Submission" };
@@ -111,12 +117,15 @@ export async function fetchGoogleSheetRecords(forceRefresh = false): Promise<Sna
   }
 
   try {
-    const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
-      method: "GET",
-      headers: { "Accept": "application/json" },
-      redirect: "follow",
-      cache: "no-store",
-    });
+    const [res, liveMos] = await Promise.all([
+      fetch(GOOGLE_SHEETS_WEBAPP_URL, {
+        method: "GET",
+        headers: { "Accept": "application/json" },
+        redirect: "follow",
+        cache: "no-store",
+      }),
+      fetchLiveMosComparisonRows(GOOGLE_SHEETS_SPREADSHEET_ID),
+    ]);
 
     if (!res.ok) {
       throw new Error(`Google Sheets WebApp returned HTTP ${res.status}`);
@@ -127,9 +136,18 @@ export async function fetchGoogleSheetRecords(forceRefresh = false): Promise<Sna
       throw new Error(data.error || "Invalid response format from Google Sheets");
     }
 
-    const mappedRecords: SnapshotRecord[] = data.records.map((raw: any) => {
+    const mosRows = liveMos?.rows?.length ? liveMos.rows : STATIC_MOS_COMPARISON_ROWS;
+    const mosRecords = mosRows.map((row) => mapMosRowToSnapshotRecord(row, "google-sheets"));
+
+    const otherRecords: SnapshotRecord[] = [];
+    for (const raw of data.records) {
       const sheetName = String(raw.sheetName || raw.subcategory || "").trim();
       const { canonicalName, category } = normalizeSubcategory(sheetName);
+      if (canonicalName === "MOS Comparison") {
+        // Replaced by full 7-column MOS Comparison records from live Google Sheet tab
+        continue;
+      }
+
       const title = String(raw.title || "").trim();
       const refNo = String(raw.refNo || "").trim();
       const status = String(raw.status || "Pending").trim();
@@ -138,7 +156,7 @@ export async function fetchGoogleSheetRecords(forceRefresh = false): Promise<Sna
       const accRef = raw.accRef ? String(raw.accRef).trim() : "";
       const sourceRow = typeof raw.sourceRow === "number" ? raw.sourceRow : null;
 
-      return {
+      otherRecords.push({
         id: raw.id || `gs-${sheetName}-${sourceRow || Math.random().toString(36).substring(2, 9)}`,
         category,
         subcategory: canonicalName,
@@ -155,9 +173,10 @@ export async function fetchGoogleSheetRecords(forceRefresh = false): Promise<Sna
         recordDate,
         notes: raw.notes ? String(raw.notes) : "",
         origin: "google-sheets",
-      };
-    });
+      });
+    }
 
+    const mappedRecords = [...mosRecords, ...otherRecords];
     cachedRecords = mappedRecords;
     lastFetchTime = now;
     return mappedRecords;
